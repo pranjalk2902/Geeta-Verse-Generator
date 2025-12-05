@@ -13,6 +13,7 @@ const MAX_CHAPTER = 18;
 const generateVerseBtn = document.getElementById('generateVerseBtn');
 const resetRoundBtn = document.getElementById('resetRoundBtn');
 const generatedVerseDisplay = document.getElementById('generatedVerseDisplay');
+const roundEndDisplay = document.getElementById('roundEndStatus');
 const globalVerseCountDisplay = document.getElementById('globalVerseCount');
 const roundChapterCountDisplay = document.getElementById('roundChapterCount');
 
@@ -131,7 +132,8 @@ function updateUI() {
          // Round complete, global universe might still have verses
         generateVerseBtn.disabled = true;
         generateVerseBtn.textContent = 'Round Complete! (Reset Required)';
-        generatedVerseDisplay.textContent = 'ROUND END';
+        // generatedVerseDisplay.textContent += '\n ROUND END';
+        roundEndDisplay.textContent = 'ROUND END';
         resetRoundBtn.textContent = 'Round Complete! (Click to Reset)';
         resetRoundBtn.disabled = false;
     } else {
@@ -139,6 +141,8 @@ function updateUI() {
          generateVerseBtn.textContent = 'Generate Random Shloka';
          resetRoundBtn.textContent = 'Reset Round';
          resetRoundBtn.disabled = false;
+         roundEndDisplay.textContent = ''
+         roundEndDisplay.disabled = false;
     }
 }
 
