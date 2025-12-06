@@ -63,6 +63,43 @@ function getNextVerse(chapter, verse) {
 }
 
 /**
+ * Checks the globalUniverse for any chapter that has zero remaining verses.
+ * If a chapter is found to be empty, all its original verses are added back
+ * to the globalUniverse, and an alert is shown.
+ */
+function replenishGlobalUniverse() {
+    let chaptersReplenished = [];
+
+    for (let ch = 1; ch <= MAX_CHAPTER; ch++) {
+        // 1. Check if the chapter is completely missing from globalUniverse
+        const chapterIsMissing = !globalUniverse.some(v => parseVerse(v).chapter === ch);
+
+        if (chapterIsMissing) {
+            // 2. The chapter is missing; generate and add all its verses
+            const maxVerse = CHAPTER_VERSES[ch];
+            const versesToAdd = [];
+            for (let vs = 1; vs <= maxVerse; vs++) {
+                versesToAdd.push(formatVerse(ch, vs));
+            }
+            
+            // Add verses to the globalUniverse
+            globalUniverse.push(...versesToAdd);
+            chaptersReplenished.push(ch);
+        }
+    }
+
+    // 3. Inform the user if any chapters were added
+    if (chaptersReplenished.length > 0) {
+        // Sort the chapter numbers for a cleaner alert message
+        chaptersReplenished.sort((a, b) => a - b);
+        
+        const alertMessage = "Chapter(s) " + chaptersReplenished.join(', ') + 
+                             " had run out of verses and were fully REPLENISHED into the Global Universe.";
+        alert(alertMessage);
+    }
+}
+
+/**
  * Generates the initial list of all 700 verses.
  * @returns {string[]} - Array of all verse strings (e.g., ["1.01", "1.02", ..., "18.78"]).
  */
@@ -91,15 +128,15 @@ function initializeState() {
  * Resets the Round-Based Universe to the current Global Universe state.
  */
 function resetRound() {
-    // 1. Reset the verse list for the round (must be a subset of global)
+    // 1. CALL THE NEW REPLENISHMENT FUNCTION FIRST
+    replenishGlobalUniverse();
+
+    // 2. Reset the verse list for the round (must be a subset of global)
     roundUniverse = [...globalUniverse]; 
     
-    // 2. Determine which chapters in the global universe still exist
+    // 3. Determine which chapters in the global universe still exist
     chaptersInRound.clear();
     for (let ch = 1; ch <= MAX_CHAPTER; ch++) {
-        // Simple check: if any verse from the chapter is present in the global list, the chapter is considered 'active'
-        const startVerse = formatVerse(ch, 1);
-        const endVerse = formatVerse(ch, CHAPTER_VERSES[ch]);
         
         // Check if the chapter has at least one remaining verse in globalUniverse
         const chapterHasRemainingVerses = globalUniverse.some(v => {
