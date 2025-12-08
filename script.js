@@ -1588,10 +1588,14 @@ const roundEndDisplay = document.getElementById('roundEndStatus');
 const globalVerseCountDisplay = document.getElementById('globalVerseCount');
 const roundChapterCountDisplay = document.getElementById('roundChapterCount');
 
-// New Elements for Shloka Text Toggle
+// Toggle Shloka View Elements
 const toggleShlokaBtn = document.getElementById('toggleShlokaBtn');
 const shlokaDisplayContainer = document.getElementById('shlokaDisplayContainer');
 const shlokaTextContent = document.getElementById('shlokaTextContent');
+
+// Mode Toggle Elements
+const modeNumberBtn = document.getElementById('modeNumberBtn');
+const modeSanskritBtn = document.getElementById('modeSanskritBtn');
 
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
@@ -1599,14 +1603,17 @@ const shlokaTextContent = document.getElementById('shlokaTextContent');
 let globalUniverse = []; 
 let roundUniverse = [];  
 let chaptersInRound = new Set(); 
+
 let currentDisplayVerses = []; // Stores the current set of 3 verses (for text display)
+let currentGeneratedKey = null; // Stores the specific verse key (e.g., "1.01") currently on screen
+let displayMode = 'NUMBER'; // Options: 'NUMBER', 'SANSKRIT'
 
 // ---------------------------------------------------------
 // 4. HELPER FUNCTIONS
 // ---------------------------------------------------------
 
 function formatVerse(chapter, verse) {
-    return `${chapter}.${verse.toString().padStart(2, '0')}`; // changed from padStart(1) to (2) to match standard 01-09 format
+    return `${chapter}.${verse.toString().padStart(2, '0')}`;
 }
 
 function parseVerse(verseStr) {
@@ -1636,8 +1643,6 @@ function replenishGlobalUniverse() {
             const maxVerse = CHAPTER_VERSES[ch];
             const versesToAdd = [];
             for (let vs = 1; vs <= maxVerse; vs++) {
-                // IMPORTANT: Ensure format matches exactly. 
-                // Previously padStart was 2, kept consistent here.
                 versesToAdd.push(`${ch}.${vs.toString().padStart(2, '0')}`);
             }
             globalUniverse.push(...versesToAdd);
@@ -1671,6 +1676,83 @@ function initializeState() {
     updateUI();
 }
 
+// ---------------------------------------------------------
+// 5. DISPLAY & MODE LOGIC
+// ---------------------------------------------------------
+
+/**
+ * Switch between Number mode and Sanskrit Mode
+ */
+function setMode(mode) {
+    displayMode = mode;
+    
+    // Update Button Styles (Larger Buttons)
+    const activeClass = "bg-white text-indigo-700 shadow-sm font-bold";
+    const inactiveClass = "text-gray-500 hover:text-gray-700 font-medium";
+
+    // Helper to clear classes
+    const resetClasses = (el) => {
+        el.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${inactiveClass}`;
+    };
+
+    resetClasses(modeNumberBtn);
+    resetClasses(modeSanskritBtn);
+
+    if (mode === 'NUMBER') {
+        modeNumberBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+    } else {
+        modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+    }
+
+    // Refresh the main display with the current verse
+    renderMainDisplay();
+}
+
+/**
+ * Renders the content of the main display box based on current mode and verse
+ */
+function renderMainDisplay() {
+    // If no verse is generated yet, keep it blank
+    if (!currentGeneratedKey) {
+        generatedVerseDisplay.textContent = "";
+        return;
+    }
+
+    if (displayMode === 'NUMBER') {
+        generatedVerseDisplay.textContent = currentGeneratedKey;
+        // Reset font size for number
+        generatedVerseDisplay.classList.remove('text-xl', 'md:text-2xl');
+        generatedVerseDisplay.classList.add('text-3xl', 'md:text-5xl');
+    } else {
+        // SANSKRIT MODE
+        // 1. Get full text from dictionary
+        let fullText = CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey];
+        
+        // Fallback: If exact key (e.g. "1.01") not found, try "1.1"
+        if (!fullText) {
+            const parts = currentGeneratedKey.split('.');
+            const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
+            fullText = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
+        }
+
+        if (fullText) {
+            // 2. Split by comma and take the first part
+            const firstPart = fullText.split(',')[0];
+            generatedVerseDisplay.textContent = firstPart.trim();
+        } else {
+            generatedVerseDisplay.textContent = "(Text Unavailable)";
+        }
+
+        // Adjust font size for text to fit better
+        generatedVerseDisplay.classList.remove('text-3xl', 'md:text-5xl');
+        generatedVerseDisplay.classList.add('text-xl', 'md:text-2xl');
+    }
+}
+
+// ---------------------------------------------------------
+// 6. MAIN LOGIC (Reset & Generation)
+// ---------------------------------------------------------
+
 function resetRound() {
     replenishGlobalUniverse();
     roundUniverse = [...globalUniverse]; 
@@ -1689,10 +1771,13 @@ function resetRound() {
     
     // Reset display UI components
     currentDisplayVerses = [];
-    toggleShlokaBtn.textContent = "Show Shloka Text";
+    currentGeneratedKey = null;
+    
+    toggleShlokaBtn.textContent = "Show Full Shloka Text";
     toggleShlokaBtn.disabled = true;
     shlokaDisplayContainer.classList.add('hidden');
-    generatedVerseDisplay.textContent = "00.00";
+    
+    renderMainDisplay(); // Will set to blank ""
 
     updateUI();
 }
@@ -1721,32 +1806,18 @@ function updateUI() {
     }
 }
 
-// ---------------------------------------------------------
-// 5. MAIN LOGIC
-// ---------------------------------------------------------
-
-/**
- * Toggles the visibility of the text for the 3 generated verses.
- */
 function toggleShlokaView() {
     const isHidden = shlokaDisplayContainer.classList.contains('hidden');
     
     if (isHidden) {
-        // We are about to Show
-        shlokaTextContent.innerHTML = ''; // Clear previous
+        // Show
+        shlokaTextContent.innerHTML = ''; 
 
         if (currentDisplayVerses.length === 0) return;
 
         currentDisplayVerses.forEach(verseKey => {
-            // Normalize key if necessary (e.g. 1.01 vs 1.1)
-            // The dictionary is expected to match the format of formatVerse output OR be simple "1.1"
-            // Let's assume user provides "1.1", "1.15". 
-            // Our formatVerse outputs "1.01". We might need to strip leading zeros to match dictionary keys if user uses "1.1"
-            
-            // Try looking up exactly as formatted (e.g., "1.01")
             let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
             
-            // Fallback: If dictionary uses "1.1" instead of "1.01", strip the zero
             if (!text) {
                 const parts = verseKey.split('.');
                 const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
@@ -1769,11 +1840,11 @@ function toggleShlokaView() {
         });
 
         shlokaDisplayContainer.classList.remove('hidden');
-        toggleShlokaBtn.textContent = "Hide Shloka Text";
+        toggleShlokaBtn.textContent = "Hide Full Shloka Text";
     } else {
-        // We are about to Hide
+        // Hide
         shlokaDisplayContainer.classList.add('hidden');
-        toggleShlokaBtn.textContent = "Show Shloka Text";
+        toggleShlokaBtn.textContent = "Show Full Shloka Text";
     }
 }
 
@@ -1799,32 +1870,34 @@ function handleGenerateVerse() {
     const selectedVerse = selectableVerses[randomIndex];
     const { chapter, verse } = parseVerse(selectedVerse);
 
-    generatedVerseDisplay.textContent = selectedVerse;
+    // ---------------------------------------------------------
+    // RENDER UPDATE: Store key and call render
+    // ---------------------------------------------------------
+    currentGeneratedKey = selectedVerse;
+    renderMainDisplay(); // This handles the "-" or Sanskrit split check
 
     // ---------------------------------------------------------
-    // NEW LOGIC: Prepare Display Data (The Verse + Next 2)
-    // This runs INDEPENDENTLY of whether they are in the universe
+    // Prepare Full Text Display Data (Verse + Next 2)
     // ---------------------------------------------------------
-    currentDisplayVerses = [selectedVerse]; // Start with selected
+    currentDisplayVerses = [selectedVerse]; 
     
-    // Find next 2 sequential verses
     let tempCursor = { chapter, verse };
     for (let i = 0; i < 2; i++) {
         tempCursor = getNextVerse(tempCursor.chapter, tempCursor.verse);
         if (tempCursor) {
             currentDisplayVerses.push(formatVerse(tempCursor.chapter, tempCursor.verse));
         } else {
-            break; // End of Gita reached
+            break; 
         }
     }
 
-    // Reset UI for the new verse
-    shlokaDisplayContainer.classList.add('hidden'); // Ensure text is hidden initially
-    toggleShlokaBtn.textContent = "Show Shloka Text";
-    toggleShlokaBtn.disabled = false; // Enable the button
+    // Reset Bottom UI for the new verse
+    shlokaDisplayContainer.classList.add('hidden'); 
+    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.disabled = false; 
 
     // ---------------------------------------------------------
-    // CULLING LOGIC (Global Universe)
+    // CULLING LOGIC
     // ---------------------------------------------------------
     const versesToRemove = [selectedVerse];
 
@@ -1833,7 +1906,6 @@ function handleGenerateVerse() {
         current = getNextVerse(current.chapter, current.verse);
         if (current) {
             const nextVerseStr = formatVerse(current.chapter, current.verse);
-            // Only remove if it exists in universe
             if (globalUniverse.includes(nextVerseStr)) {
                  versesToRemove.push(nextVerseStr);
             }
@@ -1845,20 +1917,23 @@ function handleGenerateVerse() {
     globalUniverse = globalUniverse.filter(v => !versesToRemove.includes(v));
     roundUniverse = globalUniverse; 
     
-    // Culling Round Universe (remove entire chapter)
     chaptersInRound.delete(chapter);
 
     updateUI();
 }
 
 // ---------------------------------------------------------
-// 6. EVENT LISTENERS
+// 7. EVENT LISTENERS
 // ---------------------------------------------------------
 generateVerseBtn.addEventListener('click', handleGenerateVerse);
 resetRoundBtn.addEventListener('click', resetRound);
 toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 
+// Mode Toggle Listeners
+modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
+modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+
 // ---------------------------------------------------------
-// 7. INITIALIZATION
+// 8. INITIALIZATION
 // ---------------------------------------------------------
 initializeState();
