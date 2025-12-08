@@ -1737,7 +1737,20 @@ function renderMainDisplay() {
 
         if (fullText) {
             // 2. Split by comma and take the first part
-            const firstPart = fullText.split(',')[0];
+            let firstPart = fullText.split(',')[0];
+            
+            // 3. NEW LOGIC: Check for and extract part after "वाच"
+            const keyword = 'वाच\n';
+            if (firstPart.includes(keyword)) {
+                const parts = firstPart.split(keyword);
+                // The relevant part is after the split, which is index 1
+                if (parts.length > 1) {
+                    firstPart = parts[1].trim();
+                }
+                // Note: If parts.length is 1, it means 'वाच' was at the very start (which shouldn't happen here)
+                // If the string was "X वाच", parts is ["X ", ""]. parts[1].trim() is ""
+            }
+            
             generatedVerseDisplay.textContent = firstPart.trim();
         } else {
             generatedVerseDisplay.textContent = "(Text Unavailable)";
@@ -1937,3 +1950,4 @@ modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
 // 8. INITIALIZATION
 // ---------------------------------------------------------
 initializeState();
+
