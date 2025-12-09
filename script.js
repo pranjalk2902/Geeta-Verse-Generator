@@ -1597,6 +1597,14 @@ const shlokaTextContent = document.getElementById('shlokaTextContent');
 const modeNumberBtn = document.getElementById('modeNumberBtn');
 const modeSanskritBtn = document.getElementById('modeSanskritBtn');
 
+// Universe Selector Elements
+const universeSelectorBtn = document.getElementById('universeSelectorBtn');
+const universeDropdown = document.getElementById('universeDropdown');
+const chapterCheckboxContainer = document.getElementById('chapterCheckboxContainer');
+const selectAllChaptersCheckbox = document.getElementById('selectAllChapters');
+const universeBtnText = document.getElementById('universeBtnText');
+
+
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
 // ---------------------------------------------------------
@@ -1604,9 +1612,12 @@ let globalUniverse = [];
 let roundUniverse = [];  
 let chaptersInRound = new Set(); 
 
-let currentDisplayVerses = []; // Stores the current set of 3 verses (for text display)
-let currentGeneratedKey = null; // Stores the specific verse key (e.g., "1.01") currently on screen
-let displayMode = 'NUMBER'; // Options: 'NUMBER', 'SANSKRIT'
+// NEW: Track selected chapters for the universe configuration
+let selectedChapters = new Set(); // Contains integers 1 to 18
+
+let currentDisplayVerses = []; 
+let currentGeneratedKey = null; 
+let displayMode = 'NUMBER'; 
 
 // ---------------------------------------------------------
 // 4. HELPER FUNCTIONS
@@ -1636,7 +1647,7 @@ function getNextVerse(chapter, verse) {
 function replenishGlobalUniverse() {
     let chaptersReplenished = [];
 
-    for (let ch = 1; ch <= MAX_CHAPTER; ch++) {
+    selectedChapters.forEach(ch => {
         const chapterIsMissing = !globalUniverse.some(v => parseVerse(v).chapter === ch);
 
         if (chapterIsMissing) {
@@ -1648,11 +1659,12 @@ function replenishGlobalUniverse() {
             globalUniverse.push(...versesToAdd);
             chaptersReplenished.push(ch);
         }
-    }
+    });
 
     if (chaptersReplenished.length > 0) {
         chaptersReplenished.sort((a, b) => a - b);
-        const alertMessage = "Chapter(s) " + chaptersReplenished.join(', ') + 
+        // MODIFICATION: Changed "Chapter(s)" to "Adhyaya(s)"
+        const alertMessage = "Adhyaya(s) " + chaptersReplenished.join(', ') + 
                              " had run out of verses and were fully REPLENISHED into the Global Universe.";
         alert(alertMessage);
     }
@@ -1660,37 +1672,183 @@ function replenishGlobalUniverse() {
 
 function generateAllVerses() {
     const allVerses = [];
-    for (let ch = 1; ch <= MAX_CHAPTER; ch++) {
+    selectedChapters.forEach(ch => {
         const maxVerse = CHAPTER_VERSES[ch];
         for (let vs = 1; vs <= maxVerse; vs++) {
             allVerses.push(formatVerse(ch, vs));
         }
-    }
+    });
     return allVerses;
 }
 
 function initializeState() {
-    const allVerses = generateAllVerses();
+    // 1. Initialize Selection to ALL
+    for(let i=1; i<=MAX_CHAPTER; i++) selectedChapters.add(i);
+    
+    // 2. Build the UI for the dropdown
+    renderUniverseSelector();
+    updateUniverseButtonLabel(); // Set initial label
+
+    // 3. Start the engine
+    performFullReset();
+}
+
+function performFullReset() {
+    const allVerses = generateAllVerses(); 
     globalUniverse = [...allVerses];
-    resetRound(); 
+    
+    roundUniverse = [...globalUniverse];
+    chaptersInRound.clear();
+    selectedChapters.forEach(ch => {
+        if(globalUniverse.some(v => parseVerse(v).chapter === ch)){
+            chaptersInRound.add(ch);
+        }
+    });
+
+    currentDisplayVerses = [];
+    currentGeneratedKey = null;
+    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.disabled = true;
+    shlokaDisplayContainer.classList.add('hidden');
+    renderMainDisplay(); 
+
+    updateUI();
+}
+
+function resetRound() {
+    replenishGlobalUniverse();
+    roundUniverse = [...globalUniverse]; 
+    
+    chaptersInRound.clear();
+    
+    selectedChapters.forEach(ch => {
+        const chapterHasRemainingVerses = globalUniverse.some(v => {
+            const verseObj = parseVerse(v);
+            return verseObj.chapter === ch;
+        });
+
+        if (chapterHasRemainingVerses) {
+            chaptersInRound.add(ch);
+        }
+    });
+    
+    currentDisplayVerses = [];
+    currentGeneratedKey = null;
+    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.disabled = true;
+    shlokaDisplayContainer.classList.add('hidden');
+    renderMainDisplay();
+
     updateUI();
 }
 
 // ---------------------------------------------------------
-// 5. DISPLAY & MODE LOGIC
+// 5. UNIVERSE SELECTOR UI LOGIC
 // ---------------------------------------------------------
 
-/**
- * Switch between Number mode and Sanskrit Mode
- */
+function renderUniverseSelector() {
+    chapterCheckboxContainer.innerHTML = '';
+    
+    for (let i = 1; i <= MAX_CHAPTER; i++) {
+        const div = document.createElement('div');
+        div.className = "flex items-center space-x-2 hover:bg-gray-50 p-1 rounded";
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `ch_checkbox_${i}`;
+        checkbox.value = i;
+        checkbox.checked = true; 
+        checkbox.className = "form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out";
+        
+        checkbox.addEventListener('change', (e) => {
+            handleChapterSelectionChange(i, e.target.checked);
+        });
+
+        const label = document.createElement('label');
+        label.htmlFor = `ch_checkbox_${i}`;
+        label.className = "text-sm text-gray-700 cursor-pointer select-none flex-grow";
+        // MODIFICATION: Changed "Chapter" to "Adhyaya"
+        label.innerText = `Adhyaya ${i}`;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        chapterCheckboxContainer.appendChild(div);
+    }
+}
+
+function handleChapterSelectionChange(chapterNum, isChecked) {
+    if (isChecked) {
+        selectedChapters.add(chapterNum);
+    } else {
+        selectedChapters.delete(chapterNum);
+    }
+    
+    syncSelectAllCheckbox();
+    updateUniverseButtonLabel();
+    performFullReset(); 
+}
+
+function toggleAllChapters(isChecked) {
+    const checkboxes = chapterCheckboxContainer.querySelectorAll('input[type="checkbox"]');
+    selectedChapters.clear();
+    
+    checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        if (isChecked) {
+            selectedChapters.add(parseInt(cb.value));
+        }
+    });
+
+    updateUniverseButtonLabel();
+    performFullReset();
+}
+
+function syncSelectAllCheckbox() {
+    const allSelected = selectedChapters.size === MAX_CHAPTER;
+    selectAllChaptersCheckbox.checked = allSelected;
+}
+
+function updateUniverseButtonLabel() {
+    const count = selectedChapters.size;
+    
+    // MODIFICATION: Changed "Chapters" and "Chapter" to "Adhyayas" and "Adhyaya"
+    if (count === MAX_CHAPTER) {
+        universeBtnText.textContent = "All Adhyayas";
+    } else if (count === 0) {
+        universeBtnText.textContent = "Select Adhyayas...";
+    } else {
+        universeBtnText.textContent = `${count} Adhyaya${count > 1 ? 's' : ''} Selected`;
+    }
+}
+
+// Toggle Dropdown Visibility
+universeSelectorBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    universeDropdown.classList.toggle('hidden');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!universeSelectorBtn.contains(e.target) && !universeDropdown.contains(e.target)) {
+        universeDropdown.classList.add('hidden');
+    }
+});
+
+// Select All Listener
+selectAllChaptersCheckbox.addEventListener('change', (e) => {
+    toggleAllChapters(e.target.checked);
+});
+
+// ---------------------------------------------------------
+// 6. DISPLAY & MODE LOGIC
+// ---------------------------------------------------------
+
 function setMode(mode) {
     displayMode = mode;
     
-    // Update Button Styles (Larger Buttons)
     const activeClass = "bg-white text-indigo-700 shadow-sm font-bold";
     const inactiveClass = "text-gray-500 hover:text-gray-700 font-medium";
 
-    // Helper to clear classes
     const resetClasses = (el) => {
         el.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${inactiveClass}`;
     };
@@ -1704,15 +1862,10 @@ function setMode(mode) {
         modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
     }
 
-    // Refresh the main display with the current verse
     renderMainDisplay();
 }
 
-/**
- * Renders the content of the main display box based on current mode and verse
- */
 function renderMainDisplay() {
-    // If no verse is generated yet, keep it blank
     if (!currentGeneratedKey) {
         generatedVerseDisplay.textContent = "";
         return;
@@ -1720,15 +1873,11 @@ function renderMainDisplay() {
 
     if (displayMode === 'NUMBER') {
         generatedVerseDisplay.textContent = currentGeneratedKey;
-        // Reset font size for number
         generatedVerseDisplay.classList.remove('text-xl', 'md:text-2xl');
         generatedVerseDisplay.classList.add('text-3xl', 'md:text-5xl');
     } else {
-        // SANSKRIT MODE
-        // 1. Get full text from dictionary
         let fullText = CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey];
         
-        // Fallback: If exact key (e.g. "1.01") not found, try "1.1"
         if (!fullText) {
             const parts = currentGeneratedKey.split('.');
             const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
@@ -1736,69 +1885,40 @@ function renderMainDisplay() {
         }
 
         if (fullText) {
-            // 2. Split by comma and take the first part
             let firstPart = fullText.split(',')[0];
-            
-            // 3. NEW LOGIC: Check for and extract part after "वाच"
             const keyword = 'वाच\n';
             if (firstPart.includes(keyword)) {
                 const parts = firstPart.split(keyword);
-                // The relevant part is after the split, which is index 1
                 if (parts.length > 1) {
                     firstPart = parts[1].trim();
                 }
-                // Note: If parts.length is 1, it means 'वाच' was at the very start (which shouldn't happen here)
-                // If the string was "X वाच", parts is ["X ", ""]. parts[1].trim() is ""
             }
-            
             generatedVerseDisplay.textContent = firstPart.trim();
         } else {
             generatedVerseDisplay.textContent = "(Text Unavailable)";
         }
 
-        // Adjust font size for text to fit better
         generatedVerseDisplay.classList.remove('text-3xl', 'md:text-5xl');
         generatedVerseDisplay.classList.add('text-xl', 'md:text-2xl');
     }
 }
 
 // ---------------------------------------------------------
-// 6. MAIN LOGIC (Reset & Generation)
+// 7. MAIN LOGIC
 // ---------------------------------------------------------
-
-function resetRound() {
-    replenishGlobalUniverse();
-    roundUniverse = [...globalUniverse]; 
-    
-    chaptersInRound.clear();
-    for (let ch = 1; ch <= MAX_CHAPTER; ch++) {
-        const chapterHasRemainingVerses = globalUniverse.some(v => {
-            const verseObj = parseVerse(v);
-            return verseObj.chapter === ch;
-        });
-
-        if (chapterHasRemainingVerses) {
-            chaptersInRound.add(ch);
-        }
-    }
-    
-    // Reset display UI components
-    currentDisplayVerses = [];
-    currentGeneratedKey = null;
-    
-    toggleShlokaBtn.textContent = "Show Full Shloka Text";
-    toggleShlokaBtn.disabled = true;
-    shlokaDisplayContainer.classList.add('hidden');
-    
-    renderMainDisplay(); // Will set to blank ""
-
-    updateUI();
-}
 
 function updateUI() {
     globalVerseCountDisplay.textContent = globalUniverse.length;
     roundChapterCountDisplay.textContent = chaptersInRound.size;
     
+    if (selectedChapters.size === 0) {
+        generateVerseBtn.disabled = true;
+        // MODIFICATION: Changed "Chapter" to "Adhyaya"
+        generateVerseBtn.textContent = 'Select an Adhyaya'; 
+        generatedVerseDisplay.textContent = '';
+        return;
+    }
+
     if (globalUniverse.length === 0) {
         generateVerseBtn.disabled = true;
         generateVerseBtn.textContent = 'All Verses Exhausted!';
@@ -1823,14 +1943,11 @@ function toggleShlokaView() {
     const isHidden = shlokaDisplayContainer.classList.contains('hidden');
     
     if (isHidden) {
-        // Show
         shlokaTextContent.innerHTML = ''; 
-
         if (currentDisplayVerses.length === 0) return;
 
         currentDisplayVerses.forEach(verseKey => {
             let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
-            
             if (!text) {
                 const parts = verseKey.split('.');
                 const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
@@ -1842,7 +1959,7 @@ function toggleShlokaView() {
             
             const title = document.createElement('h4');
             title.className = "font-bold text-orange-600 mb-2";
-            title.textContent = `Verse ${verseKey}`;
+            title.textContent = `Shloka ${verseKey}`;
 
             const p = document.createElement('p');
             p.textContent = text || "Shloka text not available in dictionary.";
@@ -1855,20 +1972,17 @@ function toggleShlokaView() {
         shlokaDisplayContainer.classList.remove('hidden');
         toggleShlokaBtn.textContent = "Hide Full Shloka Text";
     } else {
-        // Hide
         shlokaDisplayContainer.classList.add('hidden');
         toggleShlokaBtn.textContent = "Show Full Shloka Text";
     }
 }
 
 function handleGenerateVerse() {
-    // 1. Pre-Checks
     if (chaptersInRound.size === 0 || globalUniverse.length === 0) {
         updateUI();
         return;
     }
 
-    // 2. Select Random Verse
     const selectableVerses = roundUniverse.filter(verseStr => {
         const { chapter } = parseVerse(verseStr);
         return chaptersInRound.has(chapter);
@@ -1883,17 +1997,10 @@ function handleGenerateVerse() {
     const selectedVerse = selectableVerses[randomIndex];
     const { chapter, verse } = parseVerse(selectedVerse);
 
-    // ---------------------------------------------------------
-    // RENDER UPDATE: Store key and call render
-    // ---------------------------------------------------------
     currentGeneratedKey = selectedVerse;
-    renderMainDisplay(); // This handles the "-" or Sanskrit split check
+    renderMainDisplay(); 
 
-    // ---------------------------------------------------------
-    // Prepare Full Text Display Data (Verse + Next 2)
-    // ---------------------------------------------------------
     currentDisplayVerses = [selectedVerse]; 
-    
     let tempCursor = { chapter, verse };
     for (let i = 0; i < 2; i++) {
         tempCursor = getNextVerse(tempCursor.chapter, tempCursor.verse);
@@ -1904,16 +2011,12 @@ function handleGenerateVerse() {
         }
     }
 
-    // Reset Bottom UI for the new verse
     shlokaDisplayContainer.classList.add('hidden'); 
     toggleShlokaBtn.textContent = "Show Full Shloka Text";
     toggleShlokaBtn.disabled = false; 
 
-    // ---------------------------------------------------------
     // CULLING LOGIC
-    // ---------------------------------------------------------
     const versesToRemove = [selectedVerse];
-
     let current = { chapter, verse };
     for (let i = 0; i < 2; i++) {
         current = getNextVerse(current.chapter, current.verse);
@@ -1931,23 +2034,20 @@ function handleGenerateVerse() {
     roundUniverse = globalUniverse; 
     
     chaptersInRound.delete(chapter);
-
     updateUI();
 }
 
 // ---------------------------------------------------------
-// 7. EVENT LISTENERS
+// 8. EVENT LISTENERS
 // ---------------------------------------------------------
 generateVerseBtn.addEventListener('click', handleGenerateVerse);
 resetRoundBtn.addEventListener('click', resetRound);
 toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 
-// Mode Toggle Listeners
 modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
 
 // ---------------------------------------------------------
-// 8. INITIALIZATION
+// 9. INITIALIZATION
 // ---------------------------------------------------------
 initializeState();
-
