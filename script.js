@@ -1604,6 +1604,9 @@ const chapterCheckboxContainer = document.getElementById('chapterCheckboxContain
 const selectAllChaptersCheckbox = document.getElementById('selectAllChapters');
 const universeBtnText = document.getElementById('universeBtnText');
 
+// NEW: Scroll Button
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
 
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
@@ -1612,8 +1615,7 @@ let globalUniverse = [];
 let roundUniverse = [];  
 let chaptersInRound = new Set(); 
 
-// NEW: Track selected chapters for the universe configuration
-let selectedChapters = new Set(); // Contains integers 1 to 18
+let selectedChapters = new Set(); 
 
 let currentDisplayVerses = []; 
 let currentGeneratedKey = null; 
@@ -1663,7 +1665,6 @@ function replenishGlobalUniverse() {
 
     if (chaptersReplenished.length > 0) {
         chaptersReplenished.sort((a, b) => a - b);
-        // MODIFICATION: Changed "Chapter(s)" to "Adhyaya(s)"
         const alertMessage = "Adhyaya(s) " + chaptersReplenished.join(', ') + 
                              " had run out of verses and were fully REPLENISHED into the Global Universe.";
         alert(alertMessage);
@@ -1682,14 +1683,11 @@ function generateAllVerses() {
 }
 
 function initializeState() {
-    // 1. Initialize Selection to ALL
     for(let i=1; i<=MAX_CHAPTER; i++) selectedChapters.add(i);
     
-    // 2. Build the UI for the dropdown
     renderUniverseSelector();
-    updateUniverseButtonLabel(); // Set initial label
+    updateUniverseButtonLabel(); 
 
-    // 3. Start the engine
     performFullReset();
 }
 
@@ -1767,7 +1765,6 @@ function renderUniverseSelector() {
         const label = document.createElement('label');
         label.htmlFor = `ch_checkbox_${i}`;
         label.className = "text-sm text-gray-700 cursor-pointer select-none flex-grow";
-        // MODIFICATION: Changed "Chapter" to "Adhyaya"
         label.innerText = `Adhyaya ${i}`;
 
         div.appendChild(checkbox);
@@ -1811,7 +1808,6 @@ function syncSelectAllCheckbox() {
 function updateUniverseButtonLabel() {
     const count = selectedChapters.size;
     
-    // MODIFICATION: Changed "Chapters" and "Chapter" to "Adhyayas" and "Adhyaya"
     if (count === MAX_CHAPTER) {
         universeBtnText.textContent = "All Adhyayas";
     } else if (count === 0) {
@@ -1893,9 +1889,6 @@ function renderMainDisplay() {
                     firstPart = parts[1].trim();
                 }
             }
-
-            // 'Further splitting by a new line for special case v11.22 where comma'
-            firstPart = firstPart.split('\n')[0];
             generatedVerseDisplay.textContent = firstPart.trim();
         } else {
             generatedVerseDisplay.textContent = "(Text Unavailable)";
@@ -1907,7 +1900,7 @@ function renderMainDisplay() {
 }
 
 // ---------------------------------------------------------
-// 7. MAIN LOGIC
+// 7. MAIN LOGIC (Generate & View)
 // ---------------------------------------------------------
 
 function updateUI() {
@@ -1916,7 +1909,6 @@ function updateUI() {
     
     if (selectedChapters.size === 0) {
         generateVerseBtn.disabled = true;
-        // MODIFICATION: Changed "Chapter" to "Adhyaya"
         generateVerseBtn.textContent = 'Select an Adhyaya'; 
         generatedVerseDisplay.textContent = '';
         return;
@@ -1924,8 +1916,8 @@ function updateUI() {
 
     if (globalUniverse.length === 0) {
         generateVerseBtn.disabled = true;
-        generateVerseBtn.textContent = 'All Shlokas Exhausted!';
-        generatedVerseDisplay.textContent = '';
+        generateVerseBtn.textContent = 'All Verses Exhausted!';
+        generatedVerseDisplay.textContent = 'GAME OVER';
         resetRoundBtn.disabled = true;
     } else if (chaptersInRound.size === 0) {
         generateVerseBtn.disabled = true;
@@ -1974,6 +1966,13 @@ function toggleShlokaView() {
 
         shlokaDisplayContainer.classList.remove('hidden');
         toggleShlokaBtn.textContent = "Hide Full Shloka Text";
+        
+        // NEW: Scroll down to the displayed shloka section
+        shlokaDisplayContainer.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start' 
+        });
+
     } else {
         shlokaDisplayContainer.classList.add('hidden');
         toggleShlokaBtn.textContent = "Show Full Shloka Text";
@@ -2047,8 +2046,18 @@ generateVerseBtn.addEventListener('click', handleGenerateVerse);
 resetRoundBtn.addEventListener('click', resetRound);
 toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 
+// Mode Toggle Listeners
 modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+
+// NEW: Scroll Up Listener
+scrollToTopBtn.addEventListener('click', () => {
+    // Scroll up to the Generate Verse button
+    generateVerseBtn.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center' // Center the button for best visibility
+    });
+});
 
 // ---------------------------------------------------------
 // 9. INITIALIZATION
