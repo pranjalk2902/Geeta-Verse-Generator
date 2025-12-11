@@ -1889,6 +1889,11 @@ function renderMainDisplay() {
                     firstPart = parts[1].trim();
                 }
             }
+
+            // 'Further splitting by a new line for special case v11.22 where comma is not there and then even by - to handle special case for v8.20 where there is a hyphen instead of a comma'
+            firstPart = firstPart.split('\n')[0];
+            firstPart = firstPart.split('-')[0];
+
             generatedVerseDisplay.textContent = firstPart.trim();
         } else {
             generatedVerseDisplay.textContent = "(Text Unavailable)";
@@ -1916,8 +1921,8 @@ function updateUI() {
 
     if (globalUniverse.length === 0) {
         generateVerseBtn.disabled = true;
-        generateVerseBtn.textContent = 'All Verses Exhausted!';
-        generatedVerseDisplay.textContent = 'GAME OVER';
+        generateVerseBtn.textContent = 'All Shlokas Exhausted!';
+        generatedVerseDisplay.textContent = '';
         resetRoundBtn.disabled = true;
     } else if (chaptersInRound.size === 0) {
         generateVerseBtn.disabled = true;
