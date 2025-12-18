@@ -1611,6 +1611,9 @@ const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
 // ---------------------------------------------------------
+// 🔐 LOCAL STORAGE KEYS
+const STORAGE_KEY = "gitaAppState";
+
 let globalUniverse = []; 
 let roundUniverse = [];  
 let chaptersInRound = new Set(); 
@@ -1683,12 +1686,17 @@ function generateAllVerses() {
 }
 
 function initializeState() {
-    for(let i=1; i<=MAX_CHAPTER; i++) selectedChapters.add(i);
-    
-    renderUniverseSelector();
-    updateUniverseButtonLabel(); 
+    const restored = loadState();
 
-    performFullReset();
+    if (!restored) {
+        for (let i = 1; i <= MAX_CHAPTER; i++) selectedChapters.add(i);
+        performFullReset();
+    }
+
+    renderUniverseSelector();
+    updateUniverseButtonLabel();
+    renderMainDisplay();
+    updateUI();
 }
 
 function performFullReset() {
@@ -1711,6 +1719,7 @@ function performFullReset() {
     renderMainDisplay(); 
 
     updateUI();
+    saveState();
 }
 
 function resetRound() {
@@ -1738,6 +1747,43 @@ function resetRound() {
     renderMainDisplay();
 
     updateUI();
+    saveState();
+}
+
+// 🔐 LOCAL STORAGE HELPERS
+function saveState() {
+    const state = {
+        globalUniverse,
+        roundUniverse,
+        chaptersInRound: Array.from(chaptersInRound),
+        selectedChapters: Array.from(selectedChapters),
+        currentDisplayVerses,
+        currentGeneratedKey,
+        displayMode
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+
+    try {
+        const state = JSON.parse(raw);
+
+        globalUniverse = state.globalUniverse || [];
+        roundUniverse = state.roundUniverse || [];
+        chaptersInRound = new Set(state.chaptersInRound || []);
+        selectedChapters = new Set(state.selectedChapters || []);
+        currentDisplayVerses = state.currentDisplayVerses || [];
+        currentGeneratedKey = state.currentGeneratedKey || null;
+        displayMode = state.displayMode || "NUMBER";
+
+        return true;
+    } catch (e) {
+        console.warn("Failed to restore saved state:", e);
+        return false;
+    }
 }
 
 // ---------------------------------------------------------
@@ -1783,6 +1829,7 @@ function handleChapterSelectionChange(chapterNum, isChecked) {
     syncSelectAllCheckbox();
     updateUniverseButtonLabel();
     performFullReset(); 
+    saveState();
 }
 
 function toggleAllChapters(isChecked) {
@@ -1798,6 +1845,7 @@ function toggleAllChapters(isChecked) {
 
     updateUniverseButtonLabel();
     performFullReset();
+    saveState();
 }
 
 function syncSelectAllCheckbox() {
@@ -1859,6 +1907,7 @@ function setMode(mode) {
     }
 
     renderMainDisplay();
+    saveState();
 }
 
 function renderMainDisplay() {
@@ -2042,6 +2091,7 @@ function handleGenerateVerse() {
     
     chaptersInRound.delete(chapter);
     updateUI();
+    saveState();
 }
 
 // ---------------------------------------------------------
@@ -2062,6 +2112,30 @@ scrollToTopBtn.addEventListener('click', () => {
         behavior: 'smooth',
         block: 'center' // Center the button for best visibility
     });
+});
+
+const resetAllBtn = document.getElementById("resetAllBtn");
+
+resetAllBtn.addEventListener("click", () => {
+    const confirmed = confirm(
+        "⚠️ This will RESET ALL SHLOKAS and erase your entire progress.\n\n" +
+        "This action cannot be undone.\n\n" +
+        "Do you want to continue?"
+    );
+
+    if (!confirmed) return;
+
+    localStorage.removeItem(STORAGE_KEY);
+
+    globalUniverse = [];
+    roundUniverse = [];
+    chaptersInRound.clear();
+    selectedChapters.clear();
+    currentDisplayVerses = [];
+    currentGeneratedKey = null;
+    displayMode = "NUMBER";
+
+    initializeState();
 });
 
 // ---------------------------------------------------------
