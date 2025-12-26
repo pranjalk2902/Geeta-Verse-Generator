@@ -1723,7 +1723,7 @@ function performFullReset() {
 }
 
 function resetRound() {
-    replenishGlobalUniverse();
+    // replenishGlobalUniverse();
     roundUniverse = [...globalUniverse]; 
     
     chaptersInRound.clear();
