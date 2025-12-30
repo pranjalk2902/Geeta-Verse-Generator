@@ -1612,7 +1612,7 @@ const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 // 3. GLOBAL STATE
 // ---------------------------------------------------------
 // 🔐 LOCAL STORAGE KEYS
-const STORAGE_KEY = "gitaAppState";
+const STORAGE_KEY = "gitaAppState_current_plus_one_verse";
 
 let globalUniverse = []; 
 let roundUniverse = [];  
