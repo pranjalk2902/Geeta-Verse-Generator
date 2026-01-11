@@ -1609,7 +1609,8 @@ const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
 // NEW v1.20: Show Next Shloka Button
 const showNextShlokaBtn = document.getElementById('showNextShloka');
-
+// NEW v1.21: Show Previous Shloka Button
+const showPrevShlokaBtn = document.getElementById('showPrevShloka');
 
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
@@ -1648,6 +1649,15 @@ function getNextVerse(chapter, verse) {
         return { chapter, verse: verse + 1 };
     } else if (chapter < MAX_CHAPTER) {
         return { chapter: chapter + 1, verse: 1 };
+    }
+    return null; 
+}
+
+function getPreviousVerse(chapter, verse) {
+    if (verse > 1) {
+        return { chapter, verse: verse - 1 };
+    } else if (chapter > 1) {
+        return { chapter: chapter - 1, verse: CHAPTER_VERSES[chapter - 1] };
     }
     return null; 
 }
@@ -2043,19 +2053,23 @@ function toggleShlokaView() {
     }
 }
 
-// v1.20 addition: Adds the next sequential verse to currentDisplayVerses array
-function appendNextFormattedVerse() {
+// v1.20 addition: Adds the previous/next sequential verse to currentDisplayVerses array
+// v1.21: The whole function refactored even more adaptably to accept a parameter to add either next or previous verse
+function addOneFormattedVerse(extractNextVerse = true) {
     if (currentDisplayVerses.length === 0) return false;
 
-    const lastVerse = currentDisplayVerses[currentDisplayVerses.length - 1];
-    const parsed = parseVerse(lastVerse);
+    const refVerse = extractNextVerse ? currentDisplayVerses[currentDisplayVerses.length - 1] : currentDisplayVerses[0];
+    const parsed = parseVerse(refVerse);
     if (!parsed) return false;
 
-    const nextCursor = getNextVerse(parsed.chapter, parsed.verse);
-    if (!nextCursor) return false;
+    const newVerseCursor = extractNextVerse ? getNextVerse(parsed.chapter, parsed.verse) : getPreviousVerse(parsed.chapter, parsed.verse);
+    if (!newVerseCursor) return false;
 
-    currentDisplayVerses.push(
-        formatVerse(nextCursor.chapter, nextCursor.verse)
+    // Depending on the direction, add to the end or beginning of the array 'currentDisplayVerses'
+    extractNextVerse ? currentDisplayVerses.push(
+        formatVerse(newVerseCursor.chapter, newVerseCursor.verse)
+    ) : currentDisplayVerses.unshift(
+        formatVerse(newVerseCursor.chapter, newVerseCursor.verse)
     );
 
     return true;
@@ -2087,7 +2101,7 @@ function handleGenerateVerse() {
     currentDisplayVerses = [selectedVerse]; 
     for (let i = 0; i < 2; i++) {
         // v1.20: Refactored into a separate function
-        if (!appendNextFormattedVerse()) break;
+        if (!addOneFormattedVerse(true)) break;
     }
 
     shlokaDisplayContainer.classList.add('hidden'); 
@@ -2128,14 +2142,29 @@ toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
 
-// Show Next Shloka Button Listener
+// v1.20: Show Next Shloka Button Listener
 showNextShlokaBtn.addEventListener('click', () => {
-    const added = appendNextFormattedVerse();
+    const added = addOneFormattedVerse(true);
     if (added) {
         renderShlokaView();
         
         // Scroll to the Show Next Shloka Button for better visibility
         showNextShlokaBtn.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center' // Center the button for best visibility
+        });
+
+    }
+});
+
+// v1.21: Show Next Shloka Button Listener
+showPrevShlokaBtn.addEventListener('click', () => {
+    const added = addOneFormattedVerse(false);
+    if (added) {
+        renderShlokaView();
+        
+        // Scroll to the Show Next Shloka Button for better visibility
+        showPrevShlokaBtn.scrollIntoView({ 
             behavior: 'smooth',
             block: 'center' // Center the button for best visibility
         });
