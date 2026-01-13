@@ -1599,7 +1599,7 @@ const shlokaTextContent = document.getElementById('shlokaTextContent');
 
 // Verse Number Display Elements
 const verseNumberBox = document.getElementById('verseNumberBox');
-const verseNumberToggle = document.getElementById('verseNumberToggle');
+// const verseNumberToggle = document.getElementById('verseNumberToggle');
 
 // Universe Selector Elements
 // const universeSelectorBtn = document.getElementById('universeSelectorBtn');
@@ -1787,17 +1787,17 @@ function loadState() {
 function updateVerseNumberDisplay() {
     if (!currentGeneratedKey) return;
 
-    if (verseNumberToggle.checked) {
+    // if (verseNumberToggle.checked) {
         // Active state
         verseNumberBox.textContent = currentGeneratedKey;
-        verseNumberBox.classList.remove('bg-gray-100', 'text-gray-400', 'border-gray-300');
-        verseNumberBox.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-400', 'shadow-md');
-    } else {
-        // Hidden/Greyed out state
-        verseNumberBox.textContent = "";
-        verseNumberBox.classList.add('bg-gray-100', 'text-gray-400', 'border-gray-300');
-        verseNumberBox.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-400', 'shadow-md');
-    }
+        // verseNumberBox.classList.remove('bg-gray-100', 'text-gray-400', 'border-gray-300');
+        // verseNumberBox.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-400');
+    // } else {
+    //     // Hidden/Greyed out state
+    //     verseNumberBox.textContent = "";
+    //     verseNumberBox.classList.add('bg-gray-100', 'text-gray-400', 'border-gray-300');
+    //     verseNumberBox.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-400', 'shadow-md');
+    // }
 }
 
 function renderMainDisplay() {
@@ -1855,7 +1855,7 @@ function updateUI() {
         // resetRoundBtn.disabled = true;
     } else {
          generateVerseBtn.disabled = false;
-         generateVerseBtn.textContent = 'Generate Random Shloka';
+         generateVerseBtn.textContent = 'Tap for Shloka Charan';
          roundEndDisplay.textContent = '';
     }
 }
@@ -1989,9 +1989,9 @@ toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 // Mode Toggle Listeners
 // modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 // modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
-verseNumberToggle.addEventListener('change', () => {
-    updateVerseNumberDisplay();
-});
+// verseNumberToggle.addEventListener('change', () => {
+//     updateVerseNumberDisplay();
+// });
 
 // v1.20: Show Next Shloka Button Listener
 showNextShlokaBtn.addEventListener('click', () => {

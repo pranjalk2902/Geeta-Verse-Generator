@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Shloka Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Smooth transition for the shloka display */
+        #shlokaDisplayContainer {
+            transition: all 0.3s ease-in-out;
+        }
+        /* Custom Scrollbar for dropdown */
+        .chapter-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chapter-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .chapter-scroll::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        .chapter-scroll::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="container bg-white shadow-xl rounded-lg p-8 w-full">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-orange-900 mb-2">Shlokena Shlokank Practice App</h1>
+            <p class="text-gray-600">Test your memory by verse number</p>
+        </header>
+
+        <section class="flex flex-col md:flex-row gap-6 mb-8">
+            <div class="md:w-1/2 bg-indigo-50 p-6 rounded-lg shadow-inner flex flex-col">
+                <button id="generateVerseBtn" class="w-full bg-orange-900 hover:bg-orange-800 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md mb-8">
+                    Tap for Shloka Charan
+                </button>
+                
+                <div class="text-center flex-grow flex flex-col justify-center">
+                    
+                    <!-- <div class="flex justify-center mb-6">
+                        <div class="bg-gray-200 p-1.5 rounded-lg inline-flex shadow-inner">
+                            <button id="modeNumberBtn" class="px-6 py-2 rounded-md text-base font-bold transition-all duration-200 bg-white text-indigo-700 shadow-sm">
+                                Shlokank
+                            </button>
+                            <button id="modeSanskritBtn" class="px-6 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 transition-all duration-200">
+                                Charan
+                            </button>
+                        </div>
+                    </div> -->
+
+                    <div id="generatedVerseDisplay" class="text-3xl md:text-5xl font-extrabold text-orange-600 bg-white p-4 rounded-lg shadow-lg border-4 border-orange-900 min-h-[18rem] flex items-center justify-center select-none mb-4 text-center whitespace-pre-wrap leading-tight"></div>
+                    
+                    <div class="flex flex-col items-center gap-4 mt-4">
+                        <div class="flex items-center gap-4 group">
+                            <!-- <div id="verseNumberBox" class="opacity-0 group-hover:opacity-100 flex items-center justify-center text-xl font-bold text-gray-400 transition-all duration-300 bg-indigo-50 text-indigo-700 border-indigo-400">
+                            </div> -->
+
+                    <div
+                            id="verseNumberBox"
+                            class="flex items-center justify-center
+                                px-3 py-1
+                                text-xl font-bold
+                                border-2 border-indigo-400 rounded-lg
+                                bg-indigo-50
+                                text-indigo-50 group-hover:text-indigo-700
+                                transition-colors duration-300"
+                        >
+                        </div>                            
+    <!-- <div class="flex flex-col items-start gap-1">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Show Verse Number</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="verseNumberToggle" class="sr-only peer">
+                                    <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div> -->
+                        </div>
+                    </div>
+                    
+                    <button id="toggleShlokaBtn" disabled class="text-orange-900 hover:text-orange-1000 font-semibold underline text-sm transition-colors cursor-pointer disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed mt-4">
+                        Show Full Shloka Text
+                    </button>
+
+                    <p class="text-xl text-red-700 mt-6 font-bold min-h-[1.5rem]" id="roundEndStatus"></p>
+                </div>
+            </div>
+
+            <div class="md:w-1/2 p-6 rounded-lg border border-gray-200 flex flex-col">
+                
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Status:</h2>
+                
+                <div id="roundStatsSection">
+                    <!-- <p class="text-lg font-medium text-gray-600 flex justify-between items-center mb-1">
+                        Adhyayas Remaining:
+                        <span id="roundChapterCount" class="text-3xl font-bold text-red-500">18</span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        (Entire adhyay will be removed with every click)
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Round is complete when 0 adhyayas remain.
+                    </p>
+                    <button id="resetRoundBtn" class="w-full mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md">
+                        Reset Round
+                    </button> -->
+                    <p class="text-lg font-medium text-gray-600 flex justify-between items-center mb-1">
+                        Shlokas Remaining:
+                        <span id="globalVerseCount" class="text-3xl font-bold text-orange-600">700</span>
+                    </p>
+
+                </div>
+
+                <hr class="my-4">
+
+                <div class="mb-6">
+                    <!-- <p class="text-lg font-medium text-gray-600 flex justify-between items-center mb-1">
+                        Shlokas Remaining:
+                        <span id="globalVerseCount" class="text-3xl font-bold text-red-500">700</span>
+                    </p> -->
+                    <button id="resetAllBtn" class="w-full mt-2 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md">
+                        Reset All Shlokas
+                    </button>                    
+
+                </div>
+            </div>
+        </section>
+
+        <section id="shlokaDisplayContainer" class="hidden bg-orange-50 border-l-4 border-orange-400 p-6 rounded shadow-md mb-6">
+            <h3 class="text-lg font-bold text-orange-800 mb-4">Shloka Text:</h3>
+            <div class="mb-8 pb-4 text-center">    
+                <button id="showPrevShloka" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out">
+                    Show Previous Shloka
+                </button>
+            </div>
+
+            <div id="shlokaTextContent" class="space-y-6 text-gray-800 font-serif text-lg leading-relaxed whitespace-pre-wrap text-center">
+            </div>
+
+            <div class="mt-8 pt-4 text-center">    
+                <button id="showNextShloka" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out">
+                    Show Next Shloka
+                </button>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-orange-200 text-center">
+                <button id="scrollToTopBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-900 hover:bg-orange-1000 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                    Go to Generator
+                </button>
+            </div>
+            
+        </section>
+
+        <footer class="text-center pt-6 border-t border-gray-200 mt-4">
+            <p class="text-sm text-gray-500">Total Shlokas: 700 across 18 Adhyayas</p>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
