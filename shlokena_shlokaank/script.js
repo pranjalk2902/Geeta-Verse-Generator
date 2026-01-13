@@ -1616,7 +1616,7 @@ const showPrevShlokaBtn = document.getElementById('showPrevShloka');
 // 3. GLOBAL STATE
 // ---------------------------------------------------------
 // 🔐 LOCAL STORAGE KEYS
-const STORAGE_KEY = "gitaAppState";
+const STORAGE_KEY = "gitaAppState_shlokena_shlokaank";
 
 let globalUniverse = []; 
 let roundUniverse = [];  
