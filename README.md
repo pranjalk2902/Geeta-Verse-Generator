@@ -19,5 +19,3 @@ URL: https://pranjalk2902.github.io/Geeta-Verse-Generator/shlokena_shlokaank/
 - This is a much simplified version of the main app wherein just one verse is asked at random from the universe of 700 verses
 - The idea here is to just test if the user is able to recall the verse number from the 1st Charan of a verse
 - The feature of being able to see the full verse is also retained
-
-- 
