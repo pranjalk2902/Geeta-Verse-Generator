@@ -1594,8 +1594,12 @@ const shlokaDisplayContainer = document.getElementById('shlokaDisplayContainer')
 const shlokaTextContent = document.getElementById('shlokaTextContent');
 
 // Mode Toggle Elements
-const modeNumberBtn = document.getElementById('modeNumberBtn');
-const modeSanskritBtn = document.getElementById('modeSanskritBtn');
+// const modeNumberBtn = document.getElementById('modeNumberBtn');
+// const modeSanskritBtn = document.getElementById('modeSanskritBtn');
+
+// Verse Number Display Elements
+const verseNumberBox = document.getElementById('verseNumberBox');
+const verseNumberToggle = document.getElementById('verseNumberToggle');
 
 // Universe Selector Elements
 // const universeSelectorBtn = document.getElementById('universeSelectorBtn');
@@ -1626,7 +1630,7 @@ let selectedChapters = new Set();
 
 let currentDisplayVerses = []; 
 let currentGeneratedKey = null; 
-let displayMode = 'NUMBER'; 
+// let displayMode = 'NUMBER'; 
 
 // ---------------------------------------------------------
 // 4. HELPER FUNCTIONS
@@ -1743,7 +1747,7 @@ function saveState() {
         // selectedChapters: Array.from(selectedChapters),
         currentDisplayVerses,
         currentGeneratedKey,
-        displayMode
+        // displayMode
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -1761,7 +1765,7 @@ function loadState() {
         // selectedChapters = new Set(state.selectedChapters || []);
         currentDisplayVerses = state.currentDisplayVerses || [];
         currentGeneratedKey = state.currentGeneratedKey || null;
-        displayMode = state.displayMode || "NUMBER";
+        // displayMode = state.displayMode || "NUMBER";
 
         return true;
     } catch (e) {
@@ -1780,27 +1784,20 @@ function loadState() {
 // 6. DISPLAY & MODE LOGIC
 // ---------------------------------------------------------
 
-function setMode(mode) {
-    displayMode = mode;
-    
-    const activeClass = "bg-white text-indigo-700 shadow-sm font-bold";
-    const inactiveClass = "text-gray-500 hover:text-gray-700 font-medium";
+function updateVerseNumberDisplay() {
+    if (!currentGeneratedKey) return;
 
-    const resetClasses = (el) => {
-        el.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${inactiveClass}`;
-    };
-
-    resetClasses(modeNumberBtn);
-    resetClasses(modeSanskritBtn);
-
-    if (mode === 'NUMBER') {
-        modeNumberBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+    if (verseNumberToggle.checked) {
+        // Active state
+        verseNumberBox.textContent = currentGeneratedKey;
+        verseNumberBox.classList.remove('bg-gray-100', 'text-gray-400', 'border-gray-300');
+        verseNumberBox.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-400', 'shadow-md');
     } else {
-        modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+        // Hidden/Greyed out state
+        verseNumberBox.textContent = "";
+        verseNumberBox.classList.add('bg-gray-100', 'text-gray-400', 'border-gray-300');
+        verseNumberBox.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-400', 'shadow-md');
     }
-
-    renderMainDisplay();
-    saveState();
 }
 
 function renderMainDisplay() {
@@ -1809,41 +1806,39 @@ function renderMainDisplay() {
         return;
     }
 
-    if (displayMode === 'NUMBER') {
-        generatedVerseDisplay.textContent = currentGeneratedKey;
-        generatedVerseDisplay.classList.remove('text-xl', 'md:text-2xl');
-        generatedVerseDisplay.classList.add('text-3xl', 'md:text-5xl');
-    } else {
-        let fullText = CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey];
-        
-        if (!fullText) {
-            const parts = currentGeneratedKey.split('.');
-            const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
-            fullText = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
-        }
-
-        if (fullText) {
-            let firstPart = fullText.split(',')[0];
-            const keyword = 'वाच\n';
-            if (firstPart.includes(keyword)) {
-                const parts = firstPart.split(keyword);
-                if (parts.length > 1) {
-                    firstPart = parts[1].trim();
-                }
-            }
-
-            // 'Further splitting by a new line for special case v11.22 where comma is not there and then even by - to handle special case for v8.20 where there is a hyphen instead of a comma'
-            firstPart = firstPart.split('\n')[0];
-            firstPart = firstPart.split('-')[0];
-
-            generatedVerseDisplay.textContent = firstPart.trim();
-        } else {
-            generatedVerseDisplay.textContent = "(Text Unavailable)";
-        }
-
-        generatedVerseDisplay.classList.remove('text-3xl', 'md:text-5xl');
-        generatedVerseDisplay.classList.add('text-xl', 'md:text-2xl');
+    // Always extract and show Sanskrit text
+    let fullText = CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey];
+    
+    if (!fullText) {
+        const parts = currentGeneratedKey.split('.');
+        const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
+        fullText = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
     }
+
+    if (fullText) {
+        let firstPart = fullText.split(',')[0];
+        const keyword = 'वाच\n';
+        if (firstPart.includes(keyword)) {
+            const parts = firstPart.split(keyword);
+            if (parts.length > 1) {
+                firstPart = parts[1].trim();
+            }
+        }
+
+        // 'Further splitting by a new line for special case v11.22 where comma is not there and then even by - to handle special case for v8.20 where there is a hyphen instead of a comma'
+        firstPart = firstPart.split('\n')[0];
+        firstPart = firstPart.split('-')[0];
+
+        generatedVerseDisplay.textContent = firstPart.trim();
+    } else {
+        generatedVerseDisplay.textContent = "(Text Unavailable)";
+    }
+
+    generatedVerseDisplay.classList.remove('text-3xl', 'md:text-5xl');
+    generatedVerseDisplay.classList.add('text-xl', 'md:text-2xl');
+
+    // Update the squarish box and toggle state
+    updateVerseNumberDisplay();
 }
 
 // ---------------------------------------------------------
@@ -1992,8 +1987,11 @@ generateVerseBtn.addEventListener('click', handleGenerateVerse);
 toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 
 // Mode Toggle Listeners
-modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
-modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+// modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
+// modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+verseNumberToggle.addEventListener('change', () => {
+    updateVerseNumberDisplay();
+});
 
 // v1.20: Show Next Shloka Button Listener
 showNextShlokaBtn.addEventListener('click', () => {
@@ -2050,7 +2048,7 @@ resetAllBtn.addEventListener("click", () => {
     globalUniverse = [];
     currentDisplayVerses = [];
     currentGeneratedKey = null;
-    displayMode = "NUMBER";
+    // displayMode = "NUMBER";
 
     initializeState();
 });
