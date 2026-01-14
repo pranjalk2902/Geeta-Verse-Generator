@@ -1852,10 +1852,10 @@ function updateUI() {
         generateVerseBtn.disabled = true;
         generateVerseBtn.textContent = 'All Shlokas Exhausted!';
         generatedVerseDisplay.textContent = '';
-        // resetRoundBtn.disabled = true;
+        resetRoundBtn.disabled = true;
     } else {
          generateVerseBtn.disabled = false;
-         generateVerseBtn.textContent = 'Generate Random Shloka';
+         generateVerseBtn.textContent = 'Tap for Shloka Charan';
          roundEndDisplay.textContent = '';
     }
 }
