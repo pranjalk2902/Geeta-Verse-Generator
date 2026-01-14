@@ -10,7 +10,7 @@ There are 3 variations of the app:
 - User can even view the shlokas appearing before and after the asked verses in the Shloka display section by clicking Previous and Next buttons. Clicking them does not cull the shloka from the shloka universe
 
 2) **Current Plus 1 Verse**: https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_one_verse/
-- Same as Main App except it only expects only one verse after the current verse to be remembered and culls the full universe of 700 shlokas by upto 2 verses at a time
+- Same as Main App except it expects only one verse after the current verse to be remembered and culls the full universe of 700 shlokas by upto 2 verses at a time
 
 3) **Shlokena Shlokaank**: https://pranjalk2902.github.io/Geeta-Verse-Generator/shlokena_shlokaank/
 - This is a much simplified version of the main app wherein just one verse is asked at random from the universe of 700 verses
