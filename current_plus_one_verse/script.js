@@ -1607,6 +1607,10 @@ const universeBtnText = document.getElementById('universeBtnText');
 // NEW: Scroll Button
 const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
+// NEW v1.20: Show Next Shloka Button
+const showNextShlokaBtn = document.getElementById('showNextShloka');
+// NEW v1.21: Show Previous Shloka Button
+const showPrevShlokaBtn = document.getElementById('showPrevShloka');
 
 // ---------------------------------------------------------
 // 3. GLOBAL STATE
@@ -1997,35 +2001,42 @@ function updateUI() {
     }
 }
 
+//v1.20 refactored out of toggleShlokaView() when the shloka container is hidden to show all verses: Renders the full shloka text for all verses in currentDisplayVerses
+function renderShlokaView() {
+    
+    shlokaTextContent.innerHTML = ''; 
+    if (currentDisplayVerses.length === 0) return;
+
+    currentDisplayVerses.forEach(verseKey => {
+        let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
+        if (!text) {
+            const parts = verseKey.split('.');
+            const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
+            text = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
+        }
+
+        const verseBlock = document.createElement('div');
+        verseBlock.className = "pb-4 border-b border-orange-200 last:border-0";
+        
+        const title = document.createElement('h4');
+        title.className = "font-bold text-orange-600 mb-2";
+        title.textContent = `Shloka ${verseKey}`;
+
+        const p = document.createElement('p');
+        p.textContent = text || "Shloka text not available in dictionary.";
+
+        verseBlock.appendChild(title);
+        verseBlock.appendChild(p);
+        shlokaTextContent.appendChild(verseBlock);
+    });
+}
+
 function toggleShlokaView() {
     const isHidden = shlokaDisplayContainer.classList.contains('hidden');
     
     if (isHidden) {
-        shlokaTextContent.innerHTML = ''; 
-        if (currentDisplayVerses.length === 0) return;
-
-        currentDisplayVerses.forEach(verseKey => {
-            let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
-            if (!text) {
-                const parts = verseKey.split('.');
-                const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
-                text = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
-            }
-
-            const verseBlock = document.createElement('div');
-            verseBlock.className = "pb-4 border-b border-orange-200 last:border-0";
-            
-            const title = document.createElement('h4');
-            title.className = "font-bold text-orange-600 mb-2";
-            title.textContent = `Shloka ${verseKey}`;
-
-            const p = document.createElement('p');
-            p.textContent = text || "Shloka text not available in dictionary.";
-
-            verseBlock.appendChild(title);
-            verseBlock.appendChild(p);
-            shlokaTextContent.appendChild(verseBlock);
-        });
+        // v1.20: Display Refactored into a new function renderShlokaView() above
+        renderShlokaView();
 
         shlokaDisplayContainer.classList.remove('hidden');
         toggleShlokaBtn.textContent = "Hide Full Shloka Text";
@@ -2040,6 +2051,28 @@ function toggleShlokaView() {
         shlokaDisplayContainer.classList.add('hidden');
         toggleShlokaBtn.textContent = "Show Full Shloka Text";
     }
+}
+
+// v1.20 addition: Adds the previous/next sequential verse to currentDisplayVerses array
+// v1.21: The whole function refactored even more adaptably to accept a parameter to add either next or previous verse
+function addOneFormattedVerse(extractNextVerse = true) {
+    if (currentDisplayVerses.length === 0) return false;
+
+    const refVerse = extractNextVerse ? currentDisplayVerses[currentDisplayVerses.length - 1] : currentDisplayVerses[0];
+    const parsed = parseVerse(refVerse);
+    if (!parsed) return false;
+
+    const newVerseCursor = extractNextVerse ? getNextVerse(parsed.chapter, parsed.verse) : getPreviousVerse(parsed.chapter, parsed.verse);
+    if (!newVerseCursor) return false;
+
+    // Depending on the direction, add to the end or beginning of the array 'currentDisplayVerses'
+    extractNextVerse ? currentDisplayVerses.push(
+        formatVerse(newVerseCursor.chapter, newVerseCursor.verse)
+    ) : currentDisplayVerses.unshift(
+        formatVerse(newVerseCursor.chapter, newVerseCursor.verse)
+    );
+
+    return true;
 }
 
 function handleGenerateVerse() {
@@ -2060,7 +2093,7 @@ function handleGenerateVerse() {
 
     // Selecting verse at random
     // Looping until either: 1) The next verse is in the selectableVerses or 2) the next verse and previous verse both are not in the selectableVerses
-    while (true) {
+while (true) {
         
         var randomIndex = Math.floor(Math.random() * selectableVerses.length);    
         var selectedVerse = selectableVerses[randomIndex];
@@ -2080,20 +2113,15 @@ function handleGenerateVerse() {
             // console.log(`Selected Verse: ${selectedVerse}, Next Verse: ${nextVerseStr}, Previous Verse: ${previousVerseStr}`);
             // console.log(`Selectable Verses were: ${globalUniverse.join(', ')}`);
         }
-    }    
-    
+    }
+
     currentGeneratedKey = selectedVerse;
     renderMainDisplay(); 
 
     currentDisplayVerses = [selectedVerse]; 
-    let tempCursor = { chapter, verse };
     for (let i = 0; i < 1; i++) {
-        tempCursor = getNextVerse(tempCursor.chapter, tempCursor.verse);
-        if (tempCursor) {
-            currentDisplayVerses.push(formatVerse(tempCursor.chapter, tempCursor.verse));
-        } else {
-            break; 
-        }
+        // v1.20: Refactored into a separate function
+        if (!addOneFormattedVerse(true)) break;
     }
 
     shlokaDisplayContainer.classList.add('hidden'); 
@@ -2133,6 +2161,36 @@ toggleShlokaBtn.addEventListener('click', toggleShlokaView);
 // Mode Toggle Listeners
 modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+
+// v1.20: Show Next Shloka Button Listener
+showNextShlokaBtn.addEventListener('click', () => {
+    const added = addOneFormattedVerse(true);
+    if (added) {
+        renderShlokaView();
+        
+        // Scroll to the Show Next Shloka Button for better visibility
+        showNextShlokaBtn.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center' // Center the button for best visibility
+        });
+
+    }
+});
+
+// v1.21: Show Next Shloka Button Listener
+showPrevShlokaBtn.addEventListener('click', () => {
+    const added = addOneFormattedVerse(false);
+    if (added) {
+        renderShlokaView();
+        
+        // Scroll to the Show Next Shloka Button for better visibility
+        showPrevShlokaBtn.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center' // Center the button for best visibility
+        });
+
+    }
+});
 
 // NEW: Scroll Up Listener
 scrollToTopBtn.addEventListener('click', () => {
