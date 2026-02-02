@@ -1602,11 +1602,11 @@ const verseNumberBox = document.getElementById('verseNumberBox');
 // const verseNumberToggle = document.getElementById('verseNumberToggle');
 
 // Universe Selector Elements
-// const universeSelectorBtn = document.getElementById('universeSelectorBtn');
-// const universeDropdown = document.getElementById('universeDropdown');
-// const chapterCheckboxContainer = document.getElementById('chapterCheckboxContainer');
-// const selectAllChaptersCheckbox = document.getElementById('selectAllChapters');
-// const universeBtnText = document.getElementById('universeBtnText');
+const universeSelectorBtn = document.getElementById('universeSelectorBtn');
+const universeDropdown = document.getElementById('universeDropdown');
+const chapterCheckboxContainer = document.getElementById('chapterCheckboxContainer');
+const selectAllChaptersCheckbox = document.getElementById('selectAllChapters');
+const universeBtnText = document.getElementById('universeBtnText');
 
 // NEW: Scroll Button
 const scrollToTopBtn = document.getElementById('scrollToTopBtn');
@@ -1624,7 +1624,7 @@ const STORAGE_KEY = "gitaAppState_shlokena_shlokaank";
 
 let globalUniverse = []; 
 let roundUniverse = [];  
-let chaptersInRound = new Set(); 
+// let chaptersInRound = new Set(); 
 
 let selectedChapters = new Set(); 
 
@@ -1710,6 +1710,8 @@ function initializeState() {
         performFullReset();
     }
 
+    renderUniverseSelector();
+    updateUniverseButtonLabel();    
     renderMainDisplay();
     updateUI();
 }
@@ -1719,12 +1721,12 @@ function performFullReset() {
     globalUniverse = [...allVerses];
     
     // roundUniverse = [...globalUniverse];
-    chaptersInRound.clear();
-    selectedChapters.forEach(ch => {
-        if(globalUniverse.some(v => parseVerse(v).chapter === ch)){
-            chaptersInRound.add(ch);
-        }
-    });
+    // chaptersInRound.clear();
+    // selectedChapters.forEach(ch => {
+    //     if(globalUniverse.some(v => parseVerse(v).chapter === ch)){
+    //         chaptersInRound.add(ch);
+    //     }
+    // });
 
     currentDisplayVerses = [];
     currentGeneratedKey = null;
@@ -1778,6 +1780,99 @@ function loadState() {
 // 5. UNIVERSE SELECTOR UI LOGIC
 // ---------------------------------------------------------
 
+function renderUniverseSelector() {
+    chapterCheckboxContainer.innerHTML = '';
+    
+    for (let i = 1; i <= MAX_CHAPTER; i++) {
+        // console.log("Rendering checkbox for chapter:", i);
+        const div = document.createElement('div');
+        div.className = "flex items-center space-x-2 hover:bg-gray-50 p-1 rounded";
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `ch_checkbox_${i}`;
+        checkbox.value = i;
+        checkbox.checked = true; 
+        checkbox.className = "form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out";
+        
+        checkbox.addEventListener('change', (e) => {
+            handleChapterSelectionChange(i, e.target.checked);
+        });
+
+        const label = document.createElement('label');
+        label.htmlFor = `ch_checkbox_${i}`;
+        label.className = "text-sm text-gray-700 cursor-pointer select-none flex-grow";
+        label.innerText = `Adhyaya ${i}`;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        chapterCheckboxContainer.appendChild(div);
+    }
+}
+
+function handleChapterSelectionChange(chapterNum, isChecked) {
+    if (isChecked) {
+        selectedChapters.add(chapterNum);
+    } else {
+        selectedChapters.delete(chapterNum);
+    }
+    
+    syncSelectAllCheckbox();
+    updateUniverseButtonLabel();
+    performFullReset(); 
+    saveState();
+}
+
+function toggleAllChapters(isChecked) {
+    const checkboxes = chapterCheckboxContainer.querySelectorAll('input[type="checkbox"]');
+    selectedChapters.clear();
+    
+    checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        if (isChecked) {
+            selectedChapters.add(parseInt(cb.value));
+        }
+    });
+
+    updateUniverseButtonLabel();
+    performFullReset();
+    saveState();
+}
+
+function syncSelectAllCheckbox() {
+    const allSelected = selectedChapters.size === MAX_CHAPTER;
+    selectAllChaptersCheckbox.checked = allSelected;
+}
+
+function updateUniverseButtonLabel() {
+    const count = selectedChapters.size;
+    
+    if (count === MAX_CHAPTER) {
+        universeBtnText.textContent = "All Adhyayas";
+    } else if (count === 0) {
+        universeBtnText.textContent = "Select Adhyayas...";
+    } else {
+        universeBtnText.textContent = `${count} Adhyaya${count > 1 ? 's' : ''} Selected`;
+    }
+}
+
+// Toggle Dropdown Visibility
+universeSelectorBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    universeDropdown.classList.toggle('hidden');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!universeSelectorBtn.contains(e.target) && !universeDropdown.contains(e.target)) {
+        universeDropdown.classList.add('hidden');
+    }
+});
+
+// Select All Listener
+selectAllChaptersCheckbox.addEventListener('change', (e) => {
+    toggleAllChapters(e.target.checked);
+});
 
 
 // ---------------------------------------------------------
@@ -1975,7 +2070,7 @@ function handleGenerateVerse() {
     globalUniverse = globalUniverse.filter(v => !versesToRemove.includes(v));
     roundUniverse = globalUniverse; 
     
-    chaptersInRound.delete(chapter);
+    // chaptersInRound.delete(chapter);
     updateUI();
     saveState();
 }
