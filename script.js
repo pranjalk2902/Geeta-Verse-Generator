@@ -2091,9 +2091,29 @@ function handleGenerateVerse() {
          return;
     }
 
-    const randomIndex = Math.floor(Math.random() * selectableVerses.length);
-    const selectedVerse = selectableVerses[randomIndex];
-    const { chapter, verse } = parseVerse(selectedVerse);
+    // Selecting verse at random
+    // Looping until either: 1) The next verse is in the selectableVerses or 2) the next verse and previous verse both are not in the selectableVerses
+    while (true) {
+            
+        var randomIndex = Math.floor(Math.random() * selectableVerses.length);    
+        var selectedVerse = selectableVerses[randomIndex];
+        var { chapter, verse } = parseVerse(selectedVerse);
+        var nextVerseObj = getNextVerse(chapter, verse);
+        var previousVerseObj = getPreviousVerse(chapter, verse);
+
+        var nextVerseStr = nextVerseObj ? formatVerse(nextVerseObj.chapter, nextVerseObj.verse) : null;
+        var previousVerseStr = previousVerseObj ? formatVerse(previousVerseObj.chapter, previousVerseObj.verse) : null;
+
+        if (selectableVerses.includes(nextVerseStr)) {
+            break; // Accept this verse and exit the loop as the next verse is in selectableVerses
+        } else if (!selectableVerses.includes(previousVerseStr) && !selectableVerses.includes(nextVerseStr)) {
+            break; // Accept this verse and exit the loop as both previous and next verses are not in selectableVerses and this verse has to be chosen otherwise this verse will never get chosen
+        } else { 
+            console.log("Re-rolling verse selection as next verse is not in selectableVerses"); 
+            console.log(`Selected Verse: ${selectedVerse}, Next Verse: ${nextVerseStr}, Previous Verse: ${previousVerseStr}`);
+            console.log(`Selectable Verses were: ${selectableVerses.join(', ')}`);
+        }
+    }
 
     currentGeneratedKey = selectedVerse;
     renderMainDisplay(); 
