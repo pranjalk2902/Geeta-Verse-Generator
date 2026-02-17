@@ -9,6 +9,7 @@ let CHAPTER_VERSE_TO_SHLOKA = {};
 
 async function loadVerses() {
     const response = await fetch("verses.json");
+    // console.log("Loading verses from JSON...");
     CHAPTER_VERSE_TO_SHLOKA = await response.json();
 }
 
@@ -176,6 +177,7 @@ function initializeState() {
 
     renderUniverseSelector();
     updateUniverseButtonLabel();
+    // console.log("Calling renderMainDisplay() from initializeState with currentGeneratedKey:", currentGeneratedKey);
     renderMainDisplay();
 
     if (currentGeneratedKey) {
@@ -415,6 +417,9 @@ function renderMainDisplay() {
         generatedVerseDisplay.classList.remove('text-xl', 'md:text-2xl');
         generatedVerseDisplay.classList.add('text-3xl', 'md:text-5xl');
     } else {
+        // console.log("Rendering main display for key:", currentGeneratedKey);
+        // console.log("Value:", CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey]);
+        
         let fullText = CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey];
         
         if (!fullText) {
@@ -650,7 +655,10 @@ function replayCurrentVerseAudio() {
 
 // Load verses from JSON file on DOMContentLoaded before initializing the app state to ensure that the CHAPTER_VERSE_TO_SHLOKA dictionary is populated and ready for use when rendering shloka texts.
 document.addEventListener("DOMContentLoaded", async () => {
+    // console.log("DOM fully loaded and parsed. Now loading verses...");
     await loadVerses();
+    // initialization is now called inside the DOMContentLoaded event listener after verses are loaded to ensure that the CHAPTER_VERSE_TO_SHLOKA dictionary is populated and ready for use when rendering shloka texts.
+    initializeState();
 });
 
 
@@ -729,4 +737,5 @@ resetAllBtn.addEventListener("click", () => {
 // ---------------------------------------------------------
 // 9. INITIALIZATION
 // ---------------------------------------------------------
-initializeState();
+// initializeState();
+// initialization is now called inside the DOMContentLoaded event listener after verses are loaded to ensure that the CHAPTER_VERSE_TO_SHLOKA dictionary is populated and ready for use when rendering shloka texts.
