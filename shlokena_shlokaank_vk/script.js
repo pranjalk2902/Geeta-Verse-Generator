@@ -537,6 +537,7 @@ function handleGenerateVerse() {
     shlokaDisplayContainer.classList.add('hidden'); 
     toggleShlokaBtn.textContent = "Show Full Shloka Text";
     toggleShlokaBtn.disabled = false; 
+    replayAudioBtn.disabled = false;
 
     // CULLING LOGIC
     const versesToRemove = [selectedVerse];
