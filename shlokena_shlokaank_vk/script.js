@@ -429,7 +429,7 @@ function updateUI() {
     if (globalUniverse.length === 0) {
         generateVerseBtn.disabled = true;
         generateVerseBtn.textContent = 'All Shlokas Exhausted!';
-        generatedVerseDisplay.textContent = '';
+        // generatedVerseDisplay.textContent = '';
         // resetRoundBtn.disabled = true;
     } else {
          generateVerseBtn.disabled = false;
