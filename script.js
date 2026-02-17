@@ -178,7 +178,9 @@ function initializeState() {
     renderUniverseSelector();
     updateUniverseButtonLabel();
     // console.log("Calling renderMainDisplay() from initializeState with currentGeneratedKey:", currentGeneratedKey);
-    renderMainDisplay();
+    // calling setMode not only sets the displayMode and updates the mode toggle button styles but also calls renderMainDisplay() to ensure that the main display is rendered according to the current displayMode when the app is initialized or when the state is restored from local storage.
+    setMode(displayMode); 
+    // renderMainDisplay();
 
     if (currentGeneratedKey) {
         toggleShlokaBtn.disabled = false;
@@ -397,8 +399,10 @@ function setMode(mode) {
     resetClasses(modeSanskritBtn);
 
     if (mode === 'NUMBER') {
+        console.log("Switched to NUMBER mode");
         modeNumberBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
     } else {
+        console.log("Switched to SANSKRIT mode");
         modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
     }
 
