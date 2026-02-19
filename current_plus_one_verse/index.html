@@ -40,7 +40,25 @@
                 <button id="generateVerseBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md mb-8">
                     Generate Random Shloka
                 </button>
-                
+
+                <div class="flex items-center gap-4 mt-4 justify-center">
+                    <!-- Auto Play Toggle -->
+                    <div class="flex items-center gap-2">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="audioToggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-600 transition-all"></div>
+                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></div>
+                        </label>
+                        <span class="text-sm text-gray-700">Auto Play</span>
+                    </div>
+                    <!-- Replay Button -->
+                    <button id="replayAudioBtn"
+                        class="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white text-sm px-3 py-1.5 rounded-lg shadow transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        disabled>
+                        🔊 Replay
+                    </button>
+                </div>
+
                 <div class="text-center flex-grow flex flex-col justify-center">
                     
                     <div class="flex justify-center mb-6">
@@ -150,8 +168,18 @@
             
         </section>
 
-        <footer class="text-center pt-6 border-t border-gray-200 mt-4">
-            <p class="text-sm text-gray-500">Total Shlokas: 700 across 18 Adhyayas</p>
+        <footer class="text-center pt-6 border-t border-gray-200 mt-4 space-y-2">
+            <p class="text-sm text-gray-500">
+                Total Shlokas: 700 across 18 Adhyayas
+            </p>
+
+            <p class="text-xs text-gray-400">
+                Audio courtesy of 
+                <a href="https://learngeeta.com" target="_blank" class="underline hover:text-gray-600">
+                LearnGeeta.org
+                </a> 
+                – Recitation by Smt. Vijaya Godbole. Independent educational tool. Not affiliated.
+            </p>
         </footer>
 
     </div>
