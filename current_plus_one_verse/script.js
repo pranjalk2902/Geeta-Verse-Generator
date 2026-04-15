@@ -114,7 +114,7 @@ function getPreviousVerse(chapter, verse) {
 
 function playVerseAudio(chapter, verse) {
 
-    const audioFilePath = `../audio/${chapter}-${verse}.mp3`;
+    const audioFilePath = `../audio/${chapter}-${verse}-1.mp3`;
 
         if (currentAudio) {
         currentAudio.pause();
