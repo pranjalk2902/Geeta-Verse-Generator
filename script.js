@@ -47,6 +47,13 @@ const audioToggle = document.getElementById("audioToggle");
 const modeNumberBtn = document.getElementById('modeNumberBtn');
 const modeSanskritBtn = document.getElementById('modeSanskritBtn');
 
+// Charan Selector Button Elements
+const charanSelectorContainer = document.getElementById('charanSelectorContainer');
+const charan1Btn = document.getElementById('charan1Btn');
+const charan2Btn = document.getElementById('charan2Btn');
+const charan3Btn = document.getElementById('charan3Btn');
+const charan4Btn = document.getElementById('charan4Btn');
+
 // Universe Selector Elements
 const universeSelectorBtn = document.getElementById('universeSelectorBtn');
 const universeDropdown = document.getElementById('universeDropdown');
@@ -78,7 +85,7 @@ let currentDisplayVerses = [];
 let currentGeneratedKey = null; 
 let displayMode = 'NUMBER'; 
 let currentAudio = null;
-
+let charan_num = 1; // 1 or 3
 
 // ---------------------------------------------------------
 // 4. HELPER FUNCTIONS
@@ -105,9 +112,18 @@ function getNextVerse(chapter, verse) {
     return null; 
 }
 
-function playVerseAudio(chapter, verse) {
+function getPreviousVerse(chapter, verse) {
+    if (verse > 1) {
+        return { chapter, verse: verse - 1 };
+    } else if (chapter > 1) {
+        return { chapter: chapter - 1, verse: CHAPTER_VERSES[chapter - 1] };
+    }
+    return null; 
+}
 
-    const audioFilePath = `audio/${chapter}-${verse}.mp3`;
+function playVerseAudio(chapter, verse, charan_num) {
+
+    const audioFilePath = `audio/${chapter}-${verse}-${charan_num}.mp3`;
 
         if (currentAudio) {
         currentAudio.pause();
@@ -120,15 +136,6 @@ function playVerseAudio(chapter, verse) {
     currentAudio.play().catch(error => {
         console.log("Audio playback failed:", error);
     });
-}
-
-function getPreviousVerse(chapter, verse) {
-    if (verse > 1) {
-        return { chapter, verse: verse - 1 };
-    } else if (chapter > 1) {
-        return { chapter: chapter - 1, verse: CHAPTER_VERSES[chapter - 1] };
-    }
-    return null; 
 }
 
 function replenishGlobalUniverse() {
@@ -180,6 +187,7 @@ function initializeState() {
     // console.log("Calling renderMainDisplay() from initializeState with currentGeneratedKey:", currentGeneratedKey);
     // calling setMode not only sets the displayMode and updates the mode toggle button styles but also calls renderMainDisplay() to ensure that the main display is rendered according to the current displayMode when the app is initialized or when the state is restored from local storage.
     setMode(displayMode); 
+    updateCharanButtonsUI();
     // renderMainDisplay();
 
     if (currentGeneratedKey) {
@@ -401,9 +409,12 @@ function setMode(mode) {
     if (mode === 'NUMBER') {
         console.log("Switched to NUMBER mode");
         modeNumberBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+        charanSelectorContainer.classList.add('hidden');
+
     } else {
         console.log("Switched to SANSKRIT mode");
         modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
+        charanSelectorContainer.classList.remove('hidden');
     }
 
     renderMainDisplay();
@@ -433,20 +444,68 @@ function renderMainDisplay() {
         }
 
         if (fullText) {
-            let firstPart = fullText.split(',')[0];
+            
+            // Removing from verse, the initial '[Name] uvaacha' followed by the \n and only retaining the balance verse
             const keyword = 'वाच\n';
-            if (firstPart.includes(keyword)) {
-                const parts = firstPart.split(keyword);
+            if (fullText.includes(keyword)) {
+                const parts = fullText.split(keyword);
                 if (parts.length > 1) {
-                    firstPart = parts[1].trim();
+                    fullText = parts[1].trim();
                 }
             }
+            
+            let lines = fullText.split('\n').map(l => l.trim()).filter(l => l);
 
-            // 'Further splitting by a new line for special case v11.22 where comma is not there and then even by - to handle special case for v8.20 where there is a hyphen instead of a comma'
-            firstPart = firstPart.split('\n')[0];
-            firstPart = firstPart.split('-')[0];
+            let charan = "";
 
-            generatedVerseDisplay.textContent = firstPart.trim();
+            // ---------------------------
+            // TRISHTUP (more than 2 lines)
+            // ---------------------------
+            if (lines.length > 2) {
+                if (charan_num === 1) {
+                    charan = lines[0];
+                } else if (charan_num === 2) {
+                    charan = lines[1] || lines[0];
+                } else if (charan_num === 3) {
+                    charan = lines[2] || lines[0];
+                } else {
+                    charan = lines[3] || lines[0];
+                }
+            } 
+            // ---------------------------
+            // ANUSHTUP (2 lines)
+            // ---------------------------
+            else {
+                let splitLines = fullText.split('\n');
+
+                let selectedLine = (charan_num < 3) ? splitLines[0] : splitLines[1];
+                // console.log("Selected Line before further processing logic:", selectedLine);
+                
+                let temp = ''
+
+                if (!selectedLine) selectedLine = splitLines[0];
+
+                if (charan_num === 1 || charan_num === 3) {
+                    temp = selectedLine.split(',')[0];
+                } else {
+                    temp = selectedLine.split(',')[1] || selectedLine.split(',')[0];
+                }
+                
+                // Special processing for v8.20 which does not have a comma between 1st and 2nd charan where splitting must be done by hyphen
+                if (currentGeneratedKey === "8.20") {
+                    if (charan_num == 1) {
+                        temp = selectedLine.split('-')[0];
+                    } else {
+                        temp = selectedLine.split('-')[1] || selectedLine.split('-')[0];
+                    }
+                }
+                charan = temp.trim();
+            }
+
+            // Removing the trailing '॥' after every 4th charan
+            charan = charan.split('॥')[0].trim();
+
+            generatedVerseDisplay.textContent = charan;
         } else {
             generatedVerseDisplay.textContent = "(Text Unavailable)";
         }
@@ -454,6 +513,26 @@ function renderMainDisplay() {
         generatedVerseDisplay.classList.remove('text-3xl', 'md:text-5xl');
         generatedVerseDisplay.classList.add('text-xl', 'md:text-2xl');
     }
+}
+
+function updateCharanButtonsUI() {
+    const activeClass = "bg-white text-indigo-700 shadow-sm font-bold";
+    const inactiveClass = "text-gray-500 hover:text-gray-700";
+
+    const buttons = [
+        { btn: charan1Btn, num: 1 },
+        { btn: charan2Btn, num: 2 },
+        { btn: charan3Btn, num: 3 },
+        { btn: charan4Btn, num: 4 }
+    ];
+
+    buttons.forEach(({ btn, num }) => {
+        btn.className = `px-3 py-1.5 rounded-md text-xs transition-all ${inactiveClass}`;
+        
+        if (charan_num === num) {
+            btn.className += ` ${activeClass}`;
+        }
+    });
 }
 
 // ---------------------------------------------------------
@@ -608,7 +687,7 @@ function handleGenerateVerse() {
     currentGeneratedKey = selectedVerse;
     renderMainDisplay(); 
     if (audioToggle.checked) {
-        playVerseAudio(chapter, verse);
+        playVerseAudio(chapter, verse, charan_num);
     }    
 
     currentDisplayVerses = [selectedVerse]; 
@@ -649,7 +728,7 @@ function replayCurrentVerseAudio() {
     if (!currentGeneratedKey) return;
 
     const { chapter, verse } = parseVerse(currentGeneratedKey);
-    playVerseAudio(chapter, verse);
+    playVerseAudio(chapter, verse, charan_num);
 }
 
 
@@ -674,6 +753,31 @@ replayAudioBtn.addEventListener("click", replayCurrentVerseAudio);
 // Mode Toggle Listeners
 modeNumberBtn.addEventListener('click', () => setMode('NUMBER'));
 modeSanskritBtn.addEventListener('click', () => setMode('SANSKRIT'));
+
+// Charan Selector Button Listeners
+charan1Btn.addEventListener('click', () => {
+    charan_num = 1;
+    updateCharanButtonsUI();
+    renderMainDisplay();
+});
+
+charan2Btn.addEventListener('click', () => {
+    charan_num = 2;
+    updateCharanButtonsUI();
+    renderMainDisplay();
+});
+
+charan3Btn.addEventListener('click', () => {
+    charan_num = 3;
+    updateCharanButtonsUI();
+    renderMainDisplay();
+});
+
+charan4Btn.addEventListener('click', () => {
+    charan_num = 4;
+    updateCharanButtonsUI();
+    renderMainDisplay();
+});
 
 // v1.20: Show Next Shloka Button Listener
 showNextShlokaBtn.addEventListener('click', () => {
