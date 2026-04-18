@@ -407,12 +407,12 @@ function setMode(mode) {
     resetClasses(modeSanskritBtn);
 
     if (mode === 'NUMBER') {
-        console.log("Switched to NUMBER mode");
+        // console.log("Switched to NUMBER mode");
         modeNumberBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
         charanSelectorContainer.classList.add('hidden');
 
     } else {
-        console.log("Switched to SANSKRIT mode");
+        // console.log("Switched to SANSKRIT mode");
         modeSanskritBtn.className = `px-6 py-2 rounded-md text-base transition-all duration-200 ${activeClass}`;
         charanSelectorContainer.classList.remove('hidden');
     }
@@ -445,10 +445,11 @@ function renderMainDisplay() {
 
         if (fullText) {
             
+            let parts = [];
             // Removing from verse, the initial '[Name] uvaacha' followed by the \n and only retaining the balance verse
             const keyword = 'वाच\n';
             if (fullText.includes(keyword)) {
-                const parts = fullText.split(keyword);
+                parts = fullText.split(keyword);
                 if (parts.length > 1) {
                     fullText = parts[1].trim();
                 }
@@ -491,14 +492,27 @@ function renderMainDisplay() {
                     temp = selectedLine.split(',')[1] || selectedLine.split(',')[0];
                 }
                 
-                // Special processing for v8.20 which does not have a comma between 1st and 2nd charan where splitting must be done by hyphen
+                // Some verses processed separately: 8.20, 1.21, 1.28 based on their unique formatting in the source text where the above generic logic does not work to split charans and select the correct charan based on charan_num and hence require special handling logic as below:
+                
+                // Special processing for charan 1 and 2 of v8.20  which does not have a comma between 1st and 2nd charan where splitting must be done by hyphen
                 if (currentGeneratedKey === "8.20") {
                     if (charan_num == 1) {
                         temp = selectedLine.split('-')[0];
-                    } else {
+                    } else if (charan_num == 2) {
                         temp = selectedLine.split('-')[1] || selectedLine.split('-')[0];
                     }
                 }
+                // Special processing for charan 1 and 2 for v1.21 and v1.28 where there is an 'Arjuna Uvaacha and a new line', in the middle of the verse
+                else if (currentGeneratedKey === "1.21" || currentGeneratedKey === "1.28") {
+                    
+                    selectedLine = parts[0].split('\n')[0]; // this line is taking the first part of that split and then splitting it by \n
+                    if (charan_num == 1) {
+                        temp = selectedLine.split(',')[0]; // this parts variable was created above when we split the fullText by 'वाच\n' keyword and this line is taking the first part of that split and then splitting it by \n and then comma to take the first charan
+                    } else if (charan_num == 2) {
+                        temp = selectedLine.split(',')[1] || selectedLine.split(',')[0];
+                    }
+                }
+
                 charan = temp.trim();
             }
 
@@ -678,9 +692,9 @@ function handleGenerateVerse() {
         } else if (!selectableVerses.includes(previousVerseStr) && !selectableVerses.includes(nextVerseStr)) {
             break; // Accept this verse and exit the loop as both previous and next verses are not in selectableVerses and this verse has to be chosen otherwise this verse will never get chosen
         } else { 
-            console.log("Re-rolling verse selection as next verse is not in selectableVerses"); 
-            console.log(`Selected Verse: ${selectedVerse}, Next Verse: ${nextVerseStr}, Previous Verse: ${previousVerseStr}`);
-            console.log(`Selectable Verses were: ${selectableVerses.join(', ')}`);
+            // console.log("Re-rolling verse selection as next verse is not in selectableVerses"); 
+            // console.log(`Selected Verse: ${selectedVerse}, Next Verse: ${nextVerseStr}, Previous Verse: ${previousVerseStr}`);
+            // console.log(`Selectable Verses were: ${selectableVerses.join(', ')}`);
         }
     }
 
