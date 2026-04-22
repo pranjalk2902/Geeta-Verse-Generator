@@ -122,7 +122,7 @@ function getPreviousVerse(chapter, verse) {
 
 function playVerseAudio(chapter, verse, charan_num) {
 
-    const audioFilePath = `audio/${chapter}-${verse}-${charan_num}.mp3`;
+    const audioFilePath = `../audio/${chapter}-${verse}-${charan_num}.mp3`;
 
         if (currentAudio) {
         currentAudio.pause();
