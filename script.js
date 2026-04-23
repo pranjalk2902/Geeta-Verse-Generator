@@ -121,6 +121,16 @@ function getPreviousVerse(chapter, verse) {
     return null; 
 }
 
+function playAccordingToMode(chapter, verse) {
+    if (displayMode === 'SANSKRIT') {
+        // Charan mode → play audio file
+        playVerseAudio(chapter, verse, charan_num);
+    } else {
+        // Number mode → speak it
+        speakVerseNumber(chapter, verse);
+    }
+}
+
 function playVerseAudio(chapter, verse, charan_num) {
 
     const audioFilePath = `audio/${chapter}-${verse}-${charan_num}.mp3`;
@@ -136,6 +146,54 @@ function playVerseAudio(chapter, verse, charan_num) {
     currentAudio.play().catch(error => {
         console.log("Audio playback failed:", error);
     });
+}
+
+function speakVerseNumber(chapter, verse) {
+    // Stop any existing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    // Proper number-to-words (0–99)
+    const ones = [
+        "Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+        "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen",
+        "Seventeen","Eighteen","Nineteen"
+    ];
+
+    const tens = [
+        "", "", "Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"
+    ];
+
+    function numberToWords(num) {
+        if (num < 20) return ones[num];
+        const ten = Math.floor(num / 10);
+        const unit = num % 10;
+        return unit === 0 ? tens[ten] : `${tens[ten]} ${ones[unit]}`;
+    }
+
+    const spokenText = `${numberToWords(chapter)} point ${numberToWords(verse)}`;
+
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = "en-US";
+    utterance.rate = 0.7;   // slower = clearer & feels louder
+    utterance.pitch = 1.1;   // slightly sharper voice
+
+    // Volume control (0 to 1)
+    utterance.volume = 1;  // max
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(v => v.lang === "en-US" && v.name.includes("Google"));
+
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
+    }
+
+    window.speechSynthesis.speak(utterance);
 }
 
 function replenishGlobalUniverse() {
@@ -394,6 +452,12 @@ selectAllChaptersCheckbox.addEventListener('change', (e) => {
 // ---------------------------------------------------------
 
 function setMode(mode) {
+    // Stop any ongoing speech/audio when switching modes - added because switching modes now triggers change in the kind of audio that will play
+    window.speechSynthesis.cancel();
+    if (currentAudio) {
+        currentAudio.pause();
+    }
+
     displayMode = mode;
     
     const activeClass = "bg-white text-indigo-700 shadow-sm font-bold";
@@ -701,7 +765,7 @@ function handleGenerateVerse() {
     currentGeneratedKey = selectedVerse;
     renderMainDisplay(); 
     if (audioToggle.checked) {
-        playVerseAudio(chapter, verse, charan_num);
+        playAccordingToMode(chapter, verse);
     }    
 
     currentDisplayVerses = [selectedVerse]; 
@@ -742,7 +806,7 @@ function replayCurrentVerseAudio() {
     if (!currentGeneratedKey) return;
 
     const { chapter, verse } = parseVerse(currentGeneratedKey);
-    playVerseAudio(chapter, verse, charan_num);
+    playAccordingToMode(chapter, verse);
 }
 
 
