@@ -188,6 +188,7 @@ function initializeState() {
     renderUniverseSelector();
     updateUniverseButtonLabel();
     // setMode(displayMode); 
+    updateCharanButtonsUI();
     renderMainDisplay();
 
     if (currentGeneratedKey) {
@@ -237,6 +238,9 @@ function saveState() {
         currentDisplayVerses,
         currentGeneratedKey,
         // displayMode
+        charan_num,
+        audioEnabled: audioToggle.checked
+
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -255,6 +259,12 @@ function loadState() {
         currentDisplayVerses = state.currentDisplayVerses || [];
         currentGeneratedKey = state.currentGeneratedKey || null;
         // displayMode = state.displayMode || "NUMBER";
+
+        charan_num = state.charan_num || 1;
+
+        if (state.audioEnabled !== undefined) {
+            audioToggle.checked = state.audioEnabled;
+        }
 
         return true;
     } catch (e) {
@@ -709,24 +719,28 @@ charan1Btn.addEventListener('click', () => {
     charan_num = 1;
     updateCharanButtonsUI();
     renderMainDisplay();
+    saveState();
 });
 
 charan2Btn.addEventListener('click', () => {
     charan_num = 2;
     updateCharanButtonsUI();
     renderMainDisplay();
+    saveState();
 });
 
 charan3Btn.addEventListener('click', () => {
     charan_num = 3;
     updateCharanButtonsUI();
     renderMainDisplay();
+    saveState();
 });
 
 charan4Btn.addEventListener('click', () => {
     charan_num = 4;
     updateCharanButtonsUI();
     renderMainDisplay();
+    saveState();
 });
 
 
