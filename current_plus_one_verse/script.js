@@ -29,6 +29,7 @@ const MAX_CHAPTER = 18;
 // 2. DOM ELEMENTS
 // ---------------------------------------------------------
 const generateVerseBtn = document.getElementById('generateVerseBtn');
+const generateVerseBtn2 = document.getElementById('generateVerseBtn2');
 const resetRoundBtn = document.getElementById('resetRoundBtn');
 const generatedVerseDisplay = document.getElementById('generatedVerseDisplay');
 const roundEndDisplay = document.getElementById('roundEndStatus');
@@ -186,10 +187,26 @@ function speakVerseNumber(chapter, verse) {
     utterance.volume = 1;  // max
 
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => v.lang === "en-US" && v.name.includes("Google"));
 
+    // Priority 1: Indian English voice
+    let preferredVoice = voices.find(v => v.lang === "en-IN");
+
+    // Priority 2: Any Indian voice (sometimes labelled differently)
+    if (!preferredVoice) {
+        preferredVoice = voices.find(v => v.lang.includes("en-IN"));
+    }
+
+    // Priority 3: Google voices (often clearer)
+    if (!preferredVoice) {
+        preferredVoice = voices.find(v => v.name.includes("Google") && v.lang.startsWith("en"));
+    }
+
+    // Apply if found
     if (preferredVoice) {
         utterance.voice = preferredVoice;
+        utterance.lang = preferredVoice.lang; // sync lang with voice
+    } else {
+        utterance.lang = "en-IN"; // fallback hint
     }
 
     window.speechSynthesis.speak(utterance);
@@ -902,6 +919,14 @@ scrollToTopBtn.addEventListener('click', () => {
         behavior: 'smooth',
         block: 'center' // Center the button for best visibility
     });
+});
+generateVerseBtn2.addEventListener('click', () => {
+    // Scroll up to the Generate Verse button
+    generateVerseBtn.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center' // Center the button for best visibility
+    });
+    handleGenerateVerse();
 });
 
 const resetAllBtn = document.getElementById("resetAllBtn");
