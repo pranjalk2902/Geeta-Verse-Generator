@@ -125,9 +125,9 @@ function getPreviousVerse(chapter, verse) {
     return null; 
 }
 
-function playVerseAudio(chapter, verse) {
+function playVerseAudio(chapter, verse, charan_num) {
 
-    const audioFilePath = `../audio/${chapter}-${verse}.mp3`;
+    const audioFilePath = `../audio/${chapter}-${verse}-${charan_num}.mp3`;
 
         if (currentAudio) {
         currentAudio.pause();
@@ -625,7 +625,7 @@ function handleGenerateVerse() {
     currentGeneratedKey = selectedVerse;
     renderMainDisplay(); 
     if (audioToggle.checked) {
-        playVerseAudio(chapter, verse);
+        playVerseAudio(chapter, verse, charan_num);
     }    
 
     currentDisplayVerses = [selectedVerse]; 
@@ -666,7 +666,7 @@ function replayCurrentVerseAudio() {
     if (!currentGeneratedKey) return;
 
     const { chapter, verse } = parseVerse(currentGeneratedKey);
-    playVerseAudio(chapter, verse);
+    playVerseAudio(chapter, verse, charan_num);
 }
 
 // ---------------------------------------------------------
