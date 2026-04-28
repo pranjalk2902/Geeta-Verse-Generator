@@ -421,6 +421,11 @@ function updateVerseNumberDisplay() {
 }
 
 function renderMainDisplay() {
+    if (!currentGeneratedKey) {
+        generatedVerseDisplay.textContent = "";
+        return;
+    }
+
     // console.log("Rendering main display for key:", currentGeneratedKey);
     // console.log("Value:", CHAPTER_VERSE_TO_SHLOKA[currentGeneratedKey]);
     
