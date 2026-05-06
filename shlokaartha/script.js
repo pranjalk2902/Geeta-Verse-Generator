@@ -747,7 +747,7 @@ function renderShlokaView() {
         wordDiv.className = "mb-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded";
 
         wordDiv.innerHTML = `
-            <div class="text-sm font-semibold text-yellow-700 mb-0.5">${wordHeading}</div>
+            <div class="text-2xl font-semibold text-yellow-700 mb-0.5">${wordHeading}</div>
             <div class="text-gray-800 leading-snug">${wordMeaning || "Not available"}</div>
         `;
 
@@ -764,7 +764,7 @@ function renderShlokaView() {
         fullDiv.className = "p-2 bg-indigo-50 border-l-4 border-indigo-400 rounded";
 
         fullDiv.innerHTML = `
-            <div class="text-sm font-semibold text-indigo-700 mb-0.5">${fullHeading}</div>
+            <div class="text-2xl font-semibold text-indigo-700 mb-0.5">${fullHeading}</div>
             <div class="text-gray-800 leading-snug">${fullMeaning || "Not available"}</div>
         `;
 
