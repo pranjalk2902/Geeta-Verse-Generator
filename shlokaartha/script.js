@@ -708,12 +708,12 @@ function renderShlokaView() {
     if (currentDisplayVerses.length === 0) return;
 
     currentDisplayVerses.forEach(verseKey => {
-        let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
-        if (!text) {
+        // let text = CHAPTER_VERSE_TO_SHLOKA[verseKey];
+        // if (!text) {
             const parts = verseKey.split('.');
             const simpleKey = `${parseInt(parts[0])}.${parseInt(parts[1])}`;
             text = CHAPTER_VERSE_TO_SHLOKA[simpleKey];
-        }
+        // }
 
         const verseBlock = document.createElement('div');
         verseBlock.className = "p-4 mb-4 bg-white rounded-lg shadow border border-orange-200";
@@ -734,11 +734,11 @@ function renderShlokaView() {
         let fullHeading = "";
 
         if (meaningLanguage === "ENG") {
-            wordMeaning = MEANINGS_WORD_ENG[verseKey];
+            wordMeaning = MEANINGS_WORD_ENG[simpleKey];
             wordHeading = "Word-by-Word Meaning";
             fullHeading = "Full Meaning";
         } else {
-            wordMeaning = MEANINGS_WORD_HIN[verseKey];
+            wordMeaning = MEANINGS_WORD_HIN[simpleKey];
             wordHeading = "शब्द-दर-शब्द अर्थ";
             fullHeading = "पूर्ण अर्थ";
         }
@@ -755,9 +755,9 @@ function renderShlokaView() {
         let fullMeaning = "";
 
         if (meaningLanguage === "ENG") {
-            fullMeaning = MEANINGS_FULL_ENG[verseKey];
+            fullMeaning = MEANINGS_FULL_ENG[simpleKey];
         } else {
-            fullMeaning = MEANINGS_FULL_HIN[verseKey];
+            fullMeaning = MEANINGS_FULL_HIN[simpleKey];
         }
 
         const fullDiv = document.createElement('div');
