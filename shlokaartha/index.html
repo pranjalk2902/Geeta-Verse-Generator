@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Shloka Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
     <style>
         /* Smooth transition for the shloka display */
         #shlokaDisplayContainer {
@@ -37,7 +37,7 @@
 
         <section class="flex flex-col md:flex-row gap-6 mb-8">
             <div class="md:w-1/2 bg-indigo-50 p-6 rounded-lg shadow-inner flex flex-col">
-                <button id="generateVerseBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md mb-5">
+                <button id="generateVerseBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-md mb-5">
                     Generate Random Shloka
                 </button>
 
@@ -136,7 +136,30 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Language Selector for Meanings -->
+                <div class="mb-8 relative">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        Select Meaning Language:
+                    </label>
 
+                    <div class="relative">
+                        <select id="meaningLanguageSelect"
+                            class="appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 pl-3 pr-10 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="ENG">English</option>
+                            <option value="HIN">Hindi</option>
+                        </select>
+
+                        <!-- Dropdown arrow (to mimic button style) -->
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
                 <h2 class="text-2xl font-semibold text-gray-700 mb-4">Status:</h2>
                 
                 <div id="roundStatsSection">
@@ -164,9 +187,6 @@
                     <p class="text-lg font-medium text-gray-600 flex justify-between items-center mb-1">
                         Shlokas Remaining:
                         <span id="globalVerseCount" class="text-3xl font-bold text-red-500">700</span>
-                    </p>
-                    <p class="text-sm text-gray-500">
-                        (Current shloka and the next will be removed in sets of 2)
                     </p>
                 </div>
             </div>
@@ -204,7 +224,6 @@
                     Generate Random Shloka
                 </button>
             </div>            
-     
         </section>
 
         <footer class="text-center pt-6 border-t border-gray-200 mt-4 space-y-2">
