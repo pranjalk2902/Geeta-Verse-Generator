@@ -314,7 +314,7 @@ function performFullReset() {
 
     currentDisplayVerses = [];
     currentGeneratedKey = null;
-    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.textContent = "Show Shloka and Meaning";
     toggleShlokaBtn.disabled = true;
     replayAudioBtn.disabled = true;
 
@@ -344,7 +344,7 @@ function resetRound() {
     
     currentDisplayVerses = [];
     currentGeneratedKey = null;
-    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.textContent = "Show Shloka and Meaning";
     toggleShlokaBtn.disabled = true;
     replayAudioBtn.disabled = true;
 
@@ -784,7 +784,7 @@ function toggleShlokaView() {
         renderShlokaView();
 
         shlokaDisplayContainer.classList.remove('hidden');
-        toggleShlokaBtn.textContent = "Hide Full Shloka Text";
+        toggleShlokaBtn.textContent = "Hide Shloka and Meaning";
         
         // NEW: Scroll down to the displayed shloka section
         shlokaDisplayContainer.scrollIntoView({ 
@@ -794,7 +794,7 @@ function toggleShlokaView() {
 
     } else {
         shlokaDisplayContainer.classList.add('hidden');
-        toggleShlokaBtn.textContent = "Show Full Shloka Text";
+        toggleShlokaBtn.textContent = "Show Shloka and Meaning";
     }
 }
 
@@ -854,7 +854,7 @@ function handleGenerateVerse() {
     // }
 
     shlokaDisplayContainer.classList.add('hidden'); 
-    toggleShlokaBtn.textContent = "Show Full Shloka Text";
+    toggleShlokaBtn.textContent = "Show Shloka and Meaning";
     toggleShlokaBtn.disabled = false; 
     replayAudioBtn.disabled = false;
 
