@@ -739,7 +739,7 @@ function renderShlokaView() {
             fullHeading = "Full Meaning";
         } else {
             wordMeaning = MEANINGS_WORD_HIN[simpleKey];
-            wordHeading = "शब्द-दर-शब्द अर्थ";
+            wordHeading = "शब्दार्थ";
             fullHeading = "पूर्ण अर्थ";
         }
 
