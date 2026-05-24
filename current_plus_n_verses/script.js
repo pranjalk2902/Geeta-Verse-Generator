@@ -86,6 +86,7 @@ let chaptersInRound = new Set();
 let selectedChapters = new Set(); 
 
 let currentDisplayVerses = []; 
+let currentDisplayVerses_NotInUniverse = [];
 let currentGeneratedKey = null; 
 let displayMode = 'NUMBER'; 
 let currentAudio = null;
@@ -343,6 +344,7 @@ function saveState() {
         chaptersInRound: Array.from(chaptersInRound),
         selectedChapters: Array.from(selectedChapters),
         currentDisplayVerses,
+        currentDisplayVerses_NotInUniverse,
         currentGeneratedKey,
         displayMode,
         charan_num,
@@ -364,6 +366,7 @@ function loadState() {
         chaptersInRound = new Set(state.chaptersInRound || []);
         selectedChapters = new Set(state.selectedChapters || []);
         currentDisplayVerses = state.currentDisplayVerses || [];
+        currentDisplayVerses_NotInUniverse = state.currentDisplayVerses_NotInUniverse || [];
         currentGeneratedKey = state.currentGeneratedKey || null;
         displayMode = state.displayMode || "NUMBER";
 
@@ -696,8 +699,12 @@ function renderShlokaView() {
         }
 
         const verseBlock = document.createElement('div');
-        verseBlock.className = "pb-4 border-b border-orange-200 last:border-0";
-        
+        const isOutsideUniverse = currentDisplayVerses_NotInUniverse.includes(verseKey);
+
+        verseBlock.className = isOutsideUniverse
+            ? "pb-4 border-b border-gray-200 last:border-0 opacity-50"
+            : "pb-4 border-b border-orange-200 last:border-0";
+
         const title = document.createElement('h4');
         title.className = "font-bold text-orange-600 mb-2";
         title.textContent = `Shloka ${verseKey}`;
@@ -752,7 +759,23 @@ function addOneFormattedVerse(extractNextVerse = true) {
         formatVerse(newVerseCursor.chapter, newVerseCursor.verse)
     );
 
+    // Updating the verses in currentDisplayVerses but not in globalUniverse
+    updateCurrentDisplayVersesNotInUniverse();
     return true;
+}
+
+function updateCurrentDisplayVersesNotInUniverse() {
+    currentDisplayVerses_NotInUniverse = [];
+
+    currentDisplayVerses.forEach(verseKey => {
+
+        const existsInGlobal = globalUniverse.includes(verseKey);
+        const existsInRound = roundUniverse.includes(verseKey);
+
+        if (!existsInGlobal && !existsInRound) {
+            currentDisplayVerses_NotInUniverse.push(verseKey);
+        }
+    });
 }
 
 function handleGenerateVerse() {
@@ -806,6 +829,9 @@ function handleGenerateVerse() {
         // v1.20: Refactored into a separate function
         if (!addOneFormattedVerse(true)) break;
     }
+
+    // Updating the verses in currentDisplayVerses but not in globalUniverse
+    updateCurrentDisplayVersesNotInUniverse();
 
     shlokaDisplayContainer.classList.add('hidden'); 
     toggleShlokaBtn.textContent = "Show Full Shloka Text";
