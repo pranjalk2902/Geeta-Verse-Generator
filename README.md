@@ -1,6 +1,7 @@
 The simple web app (built with the help of Google Gemini) generates a random verse by clicking a button. The goal of this app is to assist with testing one's memory of Bhagavad Geeta verses whether by the first quarter of the verse or by the verse number. The app provides an option to view the entire verse generated at random to check if one was able to remember the verse correctly.
 
 There are 5 variations of the app:
+
 1) **Main App: Current Plus 2 Verses** : <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_two_verses/>
 - This generates a verse and expects the user to not just remember the asked verse but also 2 verses proceeding it
 - The app works in rounds and culls the full universe of 700 verses in chapter wise fashion with each round testing 18 verses from each of the 18 chapters
