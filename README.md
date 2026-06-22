@@ -2,16 +2,16 @@ The simple web app (built with the help of Google Gemini) generates a random ver
 
 There are 5 variations of the app:
 
-1) **Main App: Current Plus 2 Verses** : <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_two_verses/>
-- This generates a verse and expects the user to not just remember the asked verse but also 2 verses proceeding it
+1) **Main App: Current Plus n Verses**: <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_n_verse/>
+- This generates a verse and expects the user to not just remember the asked verse but also 'n' verses proceeding it. The value of 'n' can be set up by the user using a dropdown of values from 0 to 15.
 - The app works in rounds and culls the full universe of 700 verses in chapter wise fashion with each round testing 18 verses from each of the 18 chapters
-- The app deletes the current verse and upto 2 verses following it from the universe of 700 verses and then draws new verses from the remaining verses only to ensure the user is able to test his verse knowledge comprehensively
+- The app deletes the current verse and upto 'n' verses (specified by user) following it from the universe of 700 verses and then draws new verses from the remaining verses only to ensure the user is able to test his verse knowledge comprehensively
 - The app relies on local storage of the user's device to store the number of verses completed including the round details finished. That way even if the page gets refreshed, the number of verses already practiced are preserved and not repeated
 - User can do a hard reset and start from the beginning by clicking the correct button and can even reset a round of 18 verses midway
 - User can even view the shlokas appearing before and after the asked verses in the Shloka display section by clicking Previous and Next buttons. Clicking them does not cull the shloka from the shloka universe
 
-2) **Current Plus n Verses**: <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_n_verse/>
-- Same as Main App except it expects only 'n' verses (selected by user) after the current verse to be remembered and culls the full universe of 700 shlokas by upto n+1 verses at a time
+2) **Current Plus 2 Verses** : <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_two_verses/>
+- Same as Main App except it expects only 2 verses (selected by user) after the current verse to be remembered and culls the full universe of 700 shlokas by upto 3 verses at a time
 
 3) **Current Plus 1 Verse**: <https://pranjalk2902.github.io/Geeta-Verse-Generator/current_plus_one_verse/>
 - Same as Main App except it expects only one verse after the current verse to be remembered and culls the full universe of 700 shlokas by upto 2 verses at a time
